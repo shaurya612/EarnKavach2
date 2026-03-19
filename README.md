@@ -18,7 +18,7 @@ Current systems lack **real-time, automated income protection**, leaving gig wor
 
 EarnKavach is an AI-powered income stabilization platform that **predicts, prevents, and compensates income loss** using hyperlocal intelligence and parametric automation.
 
-> “We don’t just insure income — we stabilize it.”**
+> “We don’t just insure income — we stabilize it.”
 
 ---
 
