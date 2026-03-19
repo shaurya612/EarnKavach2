@@ -549,36 +549,46 @@ Account compromise or fraud attempt.
 ```mermaid
 flowchart TD
 
+%% User Layer
 A[👤 Delivery Partner (Mobile App)]
+
+%% Frontend
 A --> B[📱 React Native App]
 B -->|API Calls| C[⚙️ Backend Server (Node.js + Express)]
 
+%% Backend Core
 C --> D[🗄️ MongoDB Database]
 C --> E[🔐 Authentication & User Management]
 C --> F[📊 Policy & Premium Engine]
 C --> G[⚡ Trigger Engine]
 
+%% AI Layer
 C --> H[🧠 AI/ML Service (Python FastAPI)]
 
 H --> H1[📈 Income Prediction Model]
 H --> H2[🔍 Fraud Detection Model]
 H --> H3[📊 Worker Reliability Score Engine]
 
+%% External APIs
 C --> I[🌦️ Weather API]
-C --> J[🗺️ Maps API]
-C --> K[📦 Mock Delivery APIs]
+C --> J[🗺️ Maps & Geo-location API]
+C --> K[📦 Mock Delivery Platform APIs]
 
+%% Trigger Flow
 I --> G
 J --> G
 K --> G
 H --> G
 
+%% Payout System
 G --> L[💰 Payout Service]
-L --> M[💳 Razorpay]
+L --> M[💳 Razorpay (Test Mode)]
 
+%% Notifications
 G --> N[🔔 Notification Service]
 N --> B
 
+%% Dashboard
 C --> O[📊 Admin Dashboard]
 C --> P[📊 Worker Dashboard]
 ```
