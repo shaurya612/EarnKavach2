@@ -615,10 +615,10 @@ B --> J[Delivery APIs]
 
 **Synergy Squad**
 
+* Utkarsh Arora
 * Sudhansu Shukla
 * Akanksha Khantwal
 * Sanya Kumari
-* Utkarsh Arora
 * Shaurya Vardhan Yadav
 
 ---
