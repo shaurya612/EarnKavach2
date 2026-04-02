@@ -36,30 +36,6 @@ import {
 type CoverageTier = 'Trusted' | 'Suspicious' | 'Fraud'
 type ClaimStatus = 'paid' | 'processing' | 'blocked'
 
-type ClaimRecord = {
-  id: string
-  dateISO: string
-  scenario: string
-  platform: 'Zomato' | 'Swiggy'
-  zone: string
-  heatX: number
-  heatY: number
-  wrs: number
-  rainfall: number
-  rainThreshold: number
-  ordersDropPct: number
-  userActive: boolean
-  fraudScore: number
-  tier: CoverageTier
-  status: ClaimStatus
-  lostHours: number
-  payoutINR: number
-  processingTime: string
-  fraudNotes?: string[]
-}
-
-const STORAGE_KEY = 'earnkavach.claimsHistory.v1'
-
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n))
 }
@@ -377,15 +353,6 @@ export default function Demo() {
     lostHours,
     triggerEngine,
   ])
-
-  const processingTime = useMemo(() => {
-    if (!triggerEngine) return 'N/A'
-    const scoreMinutes = Math.round(fraudScore * 8)
-    if (tier === 'Trusted') return `${clamp(1, 1 + scoreMinutes, 6)} min`
-    if (tier === 'Suspicious')
-      return fraudBlocked ? `${clamp(10, 10 + scoreMinutes, 18)} min (verification)` : `${clamp(6, 6 + scoreMinutes, 14)} min`
-    return fraudBlocked ? `${clamp(12, 12 + scoreMinutes, 22)} min (blocked)` : 'Pending verification'
-  }, [fraudBlocked, fraudScore, tier, triggerEngine])
 
   const simulationLabel = useMemo(() => buildScenarioLabel({ rainfall, rainThreshold, ordersDropPct, userActive }), [
     ordersDropPct,

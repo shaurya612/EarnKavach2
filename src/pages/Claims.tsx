@@ -40,7 +40,7 @@ type ClaimRecord = {
   heatY?: number
 }
 
-const STORAGE_KEY = 'earnkavach.claimsHistory.v1'
+
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n))

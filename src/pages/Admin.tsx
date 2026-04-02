@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Shield, Activity, DollarSign, AlertTriangle, Users, Database } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Admin() {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const [stats, setStats] = useState<any>(null);
   const [claims, setClaims] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);

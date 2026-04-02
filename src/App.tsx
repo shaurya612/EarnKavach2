@@ -17,7 +17,9 @@ const pageVariants = {
   exit: { opacity: 0, y: -10, transition: { duration: 0.2 } },
 }
 
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+import type { ReactNode } from 'react'
+
+const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   return children;
