@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import axios from 'axios'
+import { useAuth } from '../context/AuthContext'
 import {
   Bike,
   Brain,
@@ -68,16 +70,16 @@ function formatINR(n: number) {
 
 function pickZone(x: number, y: number) {
   const zones = [
-    'Andheri East',
-    'Bandra West',
-    'Dharavi',
-    'Chembur',
-    'Goregaon',
-    'Powai',
-    'Kurla',
-    'Lower Parel',
-    'Malad',
-    'Vile Parle',
+    'North Zone',
+    'South District',
+    'Central Grid',
+    'East Sector',
+    'West Hub',
+    'Industrial Park',
+    'Business Center',
+    'Residential Sector',
+    'Uptown Block',
+    'Downtown Grid',
   ]
   const idx = (x * 17 + y * 13) % zones.length
   return zones[idx]
@@ -322,6 +324,7 @@ function Step({
 }
 
 export default function Demo() {
+  const { user, token, locationCity } = useAuth()
   const [platform, setPlatform] = useState<'Zomato' | 'Swiggy'>('Zomato')
   const [userActive, setUserActive] = useState(true)
   const [wrs, setWrs] = useState(82)
@@ -476,53 +479,66 @@ export default function Demo() {
     }
   }
 
-  const finalizeClaimToStorage = () => {
-    const base: ClaimRecord = {
-      id: selectedClaimId ?? createId(),
-      dateISO: new Date().toISOString(),
-      scenario: simulationLabel,
-      platform,
-      zone,
-      heatX,
-      heatY,
-      wrs,
-      rainfall,
-      rainThreshold,
-      ordersDropPct,
-      userActive,
-      fraudScore,
-      tier,
-      status: runStatus === 'paid' ? 'paid' : runStatus === 'blocked' ? 'blocked' : 'processing',
-      lostHours,
-      payoutINR: payout,
-      processingTime,
+  const triggerRazorpayCheckout = async (amount: number, claimId: string) => {
+    if (!(window as any).Razorpay) {
+      console.warn('Razorpay SDK not loaded');
+      return;
     }
-
-    const fraudNotes: string[] = []
-    if (tier === 'Suspicious') fraudNotes.push('Verification tier: payout may be delayed until signals stabilize.')
-    if (fraudBlocked) fraudNotes.push('Fraud Shield flagged: GPS/movement anomalies or suspicious pattern detected.')
-    if (!triggerEngine) fraudNotes.push('Trigger Engine conditions not satisfied (no claim).')
-    if (fraudNotes.length) base.fraudNotes = fraudNotes
-
-    // If trigger was false, payout will be 0 and we store it as "blocked" (presentation-friendly).
-    if (!triggerEngine) {
-      base.status = 'blocked'
-      base.payoutINR = 0
-      base.processingTime = 'Rejected'
-    }
-
-    const raw = localStorage.getItem(STORAGE_KEY)
-    let history: ClaimRecord[] = []
     try {
-      history = raw ? (JSON.parse(raw) as ClaimRecord[]) : []
-    } catch {
-      history = []
+      const { data } = await axios.post('http://localhost:5000/payment/create-order', { amount }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const options = {
+        key: 'rzp_test_PlaceholderKeyId1234',
+        amount: data.amount,
+        currency: data.currency,
+        name: 'EarnKavach Protect',
+        description: `Micro-Payout for Claim #${claimId}`,
+        order_id: data.id,
+        handler: function (response: any) {
+          console.log("Payment success sync:", response.razorpay_payment_id);
+        },
+        prefill: {
+          name: user?.name,
+          email: user?.email || 'worker@earnkavach.com',
+          contact: '9999999999'
+        },
+        theme: {
+          color: '#f97316'
+        }
+      };
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (response: any){
+        console.error("Payment failed", response.error.description);
+      });
+      rzp.open();
+    } catch (e) {
+      console.error('Razorpay Error:', e);
     }
+  }
 
-    const existingIdx = history.findIndex((c) => c.id === base.id)
-    const next = existingIdx >= 0 ? [...history.slice(0, existingIdx), base, ...history.slice(existingIdx + 1)] : [base, ...history]
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next.slice(0, 25)))
-    setSelectedClaimId(base.id)
+  const finalizeClaimToStorage = async () => {
+    try {
+      const response = await axios.post('http://localhost:5000/claim', {
+        fraud_data: [1, heatX, heatY, rainfall, ordersDropPct, userActive ? 1 : 0],
+        income_data: [expectedHourly, lostHours, userActive ? 1 : 0],
+        actual_income: 0,
+        coverage: coveragePercent,
+        scenario: simulationLabel,
+        platform: platform,
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const claimDbId = response.data.claim_id?.substring(response.data.claim_id.length - 8).toUpperCase() || createId();
+      setSelectedClaimId(claimDbId)
+
+      if (runStatus === 'paid' && payout > 0) {
+        triggerRazorpayCheckout(Math.round(payout), claimDbId);
+      }
+    } catch (err) {
+      console.error("Failed to save claim to API:", err)
+      setSelectedClaimId(createId())
+    }
   }
 
   // When run ends (runStatus not running), persist record once.
@@ -587,6 +603,49 @@ export default function Demo() {
     setHeatY(1)
   }
 
+  const syncLiveWeather = async () => {
+    const fetchWeatherForCoords = async (lat: number, lon: number) => {
+      try {
+        const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation`);
+        const weatherData = await weatherRes.json();
+        const { temperature_2m, precipitation } = weatherData.current;
+        
+        setRainfall(Math.round(precipitation > 0 ? precipitation * 20 : 0));
+        setHeatX(Math.min(10, Math.round(temperature_2m / 5)));
+        setOrdersDropPct(precipitation > 0 ? 65 : 25);
+      } catch (e) {
+        console.error("Weather Sync Error:", e);
+      }
+    };
+
+    if ('geolocation' in navigator) {
+       navigator.geolocation.getCurrentPosition(
+         (pos) => {
+           fetchWeatherForCoords(pos.coords.latitude, pos.coords.longitude);
+         },
+         async () => {
+           // Fallback to IP-based city coordinate detection if GPS permission is denied
+           try {
+             const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${locationCity}&count=1&format=json`);
+             const geoData = await geoRes.json();
+             if (geoData.results?.length) {
+               fetchWeatherForCoords(geoData.results[0].latitude, geoData.results[0].longitude);
+             }
+           } catch (err) {}
+         }
+       );
+    } else {
+       // Browser doesn't support geolocation at all, use IP fallback
+       try {
+         const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${locationCity}&count=1&format=json`);
+         const geoData = await geoRes.json();
+         if (geoData.results?.length) {
+           fetchWeatherForCoords(geoData.results[0].latitude, geoData.results[0].longitude);
+         }
+       } catch (err) {}
+    }
+  }
+
   return (
     <div className="min-h-screen pt-24 pb-16 overflow-hidden">
       {/* Background accents */}
@@ -644,8 +703,8 @@ export default function Demo() {
                     <Bike className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <div className="text-white font-bold">Rahul Sharma</div>
-                    <div className="text-slate-500 text-xs">Zomato Partner · Mumbai · {zone}</div>
+                    <div className="text-white font-bold">{user?.name || 'Rahul Sharma'}</div>
+                    <div className="text-slate-500 text-xs">{user?.platform || 'Zomato'} Partner · {locationCity || 'India'} · {zone}</div>
                   </div>
                 </div>
                 <div className="px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2">
@@ -768,6 +827,14 @@ export default function Demo() {
                   className="px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-bold hover:bg-emerald-500/15 transition-colors"
                 >
                   Trusted Payout
+                </button>
+                <button
+                  type="button"
+                  onClick={syncLiveWeather}
+                  className="px-3 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-bold hover:bg-blue-500/15 transition-colors flex items-center gap-1.5 ml-auto"
+                >
+                  <CloudRain className="w-3.5 h-3.5" />
+                  Sync Live Weather
                 </button>
                 <button
                   type="button"

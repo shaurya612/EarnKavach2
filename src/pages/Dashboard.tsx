@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import axios from 'axios'
+import { useAuth } from '../context/AuthContext'
 import { motion } from 'framer-motion'
 import {
   AreaChart,
@@ -28,39 +30,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-/* ── Mock data ── */
-const earningData = [
-  { day: 'Mar 1', predicted: 820, actual: 790 }, { day: 'Mar 2', predicted: 780, actual: 810 },
-  { day: 'Mar 3', predicted: 850, actual: 620 }, { day: 'Mar 4', predicted: 900, actual: 870 },
-  { day: 'Mar 5', predicted: 860, actual: 880 }, { day: 'Mar 6', predicted: 700, actual: 460 },
-  { day: 'Mar 7', predicted: 820, actual: 820 }, { day: 'Mar 8', predicted: 880, actual: 850 },
-  { day: 'Mar 9', predicted: 940, actual: 910 }, { day: 'Mar 10', predicted: 870, actual: 580 },
-  { day: 'Mar 11', predicted: 820, actual: 800 }, { day: 'Mar 12', predicted: 810, actual: 790 },
-  { day: 'Mar 13', predicted: 860, actual: 840 }, { day: 'Mar 14', predicted: 920, actual: 680 },
-  { day: 'Mar 15', predicted: 850, actual: 830 }, { day: 'Mar 16', predicted: 800, actual: 780 },
-  { day: 'Mar 17', predicted: 870, actual: 850 }, { day: 'Mar 18', predicted: 910, actual: 580 },
-  { day: 'Mar 19', predicted: 850, actual: 620 },
-]
-
-const weeklyData = [
-  { day: 'Mon', income: 720 }, { day: 'Tue', income: 850 }, { day: 'Wed', income: 640 },
-  { day: 'Thu', income: 920 }, { day: 'Fri', income: 780 }, { day: 'Sat', income: 450 },
-  { day: 'Sun', income: 620 },
-]
-
-const claims = [
-  { id: 'CL-2847', date: 'Mar 18, 2026', type: 'Heavy Rain', lost: 330, payout: 264, status: 'paid', time: '4 min' },
-  { id: 'CL-2791', date: 'Mar 14, 2026', type: 'Heavy Rain', lost: 240, payout: 192, status: 'paid', time: '3 min' },
-  { id: 'CL-2763', date: 'Mar 10, 2026', type: 'Extreme Heat', lost: 290, payout: 232, status: 'paid', time: '6 min' },
-  { id: 'CL-2741', date: 'Mar 6, 2026', type: 'Traffic Block', lost: 240, payout: 192, status: 'paid', time: '5 min' },
-  { id: 'CL-2847', date: 'Mar 19, 2026', type: 'Heavy Rain', lost: 230, payout: 184, status: 'processing', time: '—' },
-]
-
-const alerts = [
-  { icon: CloudRain, type: 'Heavy Rain', zone: 'Andheri East', severity: 'high', time: '2 min ago', action: 'Claim triggered ₹230' },
-  { icon: Wind, type: 'AQI Alert', zone: 'Bandra West', severity: 'medium', time: '1 hr ago', action: 'Suggest zone shift' },
-  { icon: Sun, type: 'Extreme Heat', zone: 'Dharavi', severity: 'low', time: '3 hrs ago', action: 'Take early break' },
-]
+/* ── Mock data is now fetched from backend ── */
 
 /* ── WRS Gauge SVG ── */
 function WRSGauge({ score }: { score: number }) {
@@ -140,7 +110,40 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 export default function Dashboard() {
+  const { user, token, locationCity } = useAuth()
   const [activeTab, setActiveTab] = useState<'week' | 'month'>('month')
+  const [dbClaims, setDbClaims] = useState<any[]>([])
+  const [dashboardData, setDashboardData] = useState<any>({ earningData: [], weeklyData: [], alerts: [], wrsScore: 85 })
+  const [policyData, setPolicyData] = useState<any>(null)
+
+  useEffect(() => {
+    if (!token) return
+    axios.get('http://localhost:5000/claims', { headers: { Authorization: `Bearer ${token}` }})
+      .then(res => setDbClaims(res.data))
+      .catch(console.error)
+
+    axios.get('http://localhost:5000/gig/realtime-stats', { headers: { Authorization: `Bearer ${token}` }})
+      .then(res => setDashboardData(res.data))
+      .catch(console.error)
+
+    axios.get('http://localhost:5000/policy/my-policy', { headers: { Authorization: `Bearer ${token}` }})
+      .then(res => setPolicyData(res.data.policy))
+      .catch(console.error)
+  }, [token])
+
+  const getAlertIcon = (type: string) => {
+    if (type.includes('Rain')) return CloudRain
+    if (type.includes('Heat')) return Sun
+    return Wind
+  }
+
+  const stats = useMemo(() => {
+    const paid = dbClaims.filter(c => c.status === 'paid')
+    const processing = dbClaims.filter(c => c.status === 'processing')
+    const saved = paid.reduce((s, c) => s + c.payoutINR, 0)
+    const pending = processing.reduce((s, c) => s + c.payoutINR, 0)
+    return { saved, pending, paidCount: paid.length }
+  }, [dbClaims])
 
   const stagger = (i: number) => ({ initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { delay: i * 0.08, duration: 0.5 } })
 
@@ -158,9 +161,9 @@ export default function Dashboard() {
                 <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-400 border-2 border-[#07070f]" />
               </div>
               <div>
-                <h1 className="text-2xl font-black text-white">Rahul Sharma</h1>
+                <h1 className="text-2xl font-black text-white">{user?.name || 'Rahul Sharma'}</h1>
                 <div className="flex items-center gap-3 mt-0.5">
-                  <span className="text-slate-400 text-sm">Zomato Partner · Mumbai, Andheri East</span>
+                  <span className="text-slate-400 text-sm">{user?.platform || 'Zomato'} Partner · {locationCity}</span>
                   <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     <span className="text-emerald-400 text-[10px] font-semibold">ONLINE</span>
@@ -173,11 +176,11 @@ export default function Dashboard() {
           <motion.div className="flex items-center gap-3" {...stagger(1)}>
             <div className="glass rounded-xl px-4 py-2.5 flex items-center gap-2">
               <Shield className="w-4 h-4 text-orange-400" />
-              <span className="text-white text-sm font-semibold">Coverage: 80%</span>
+              <span className="text-white text-sm font-semibold">Coverage: {policyData?.coveragePercent || '80'}%</span>
             </div>
             <div className="glass rounded-xl px-4 py-2.5 flex items-center gap-2">
               <Star className="w-4 h-4 text-amber-400" />
-              <span className="text-white text-sm font-semibold">Premium: ₹49/wk</span>
+              <span className="text-white text-sm font-semibold">Premium: ₹{policyData?.weeklyPremiumINR || '49'}/wk</span>
             </div>
             <Link to="/demo">
               <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-white text-sm font-bold transition-colors shadow-lg shadow-orange-500/20">
@@ -192,8 +195,8 @@ export default function Dashboard() {
           {[
             { label: "Today's Income", val: '₹620', sub: '↓ ₹230 from disruption', subColor: 'text-red-400', icon: DollarSign, bg: 'glass-orange', iconColor: 'text-orange-400' },
             { label: 'AI Predicted', val: '₹850', sub: '↑ Confidence 94.2%', subColor: 'text-emerald-400', icon: TrendingUp, bg: 'glass-purple', iconColor: 'text-purple-400' },
-            { label: 'Active Claim', val: '₹230', sub: 'Processing · 2 min', subColor: 'text-amber-400', icon: Zap, bg: 'glass-amber', iconColor: 'text-amber-400' },
-            { label: 'Monthly Saved', val: '₹1,064', sub: '↑ 4 claims this month', subColor: 'text-emerald-400', icon: CheckCircle, bg: 'glass-emerald', iconColor: 'text-emerald-400' },
+            { label: 'Active Claim', val: `₹${stats.pending}`, sub: 'Processing · 2 min', subColor: 'text-amber-400', icon: Zap, bg: 'glass-amber', iconColor: 'text-amber-400' },
+            { label: 'Monthly Saved', val: `₹${stats.saved}`, sub: `↑ ${stats.paidCount} claims this month`, subColor: 'text-emerald-400', icon: CheckCircle, bg: 'glass-emerald', iconColor: 'text-emerald-400' },
           ].map((card, i) => (
             <motion.div key={i} className={`${card.bg} rounded-2xl p-5 relative overflow-hidden`} {...stagger(i + 2)}>
               <div className="flex items-start justify-between mb-3">
@@ -252,7 +255,7 @@ export default function Dashboard() {
               </div>
 
               <ResponsiveContainer width="100%" height={220}>
-                <AreaChart data={earningData.slice(activeTab === 'week' ? -7 : 0)}>
+                <AreaChart data={dashboardData.earningData.slice(activeTab === 'week' ? -7 : 0)}>
                   <defs>
                     <linearGradient id="predGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#a855f7" stopOpacity={0.15} />
@@ -283,7 +286,7 @@ export default function Dashboard() {
                 <div className="px-3 py-1.5 rounded-lg glass-orange text-xs font-semibold text-orange-400">₹940 recovered</div>
               </div>
               <ResponsiveContainer width="100%" height={160}>
-                <BarChart data={weeklyData} barSize={28}>
+                <BarChart data={dashboardData.weeklyData} barSize={28}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
                   <XAxis dataKey="day" tick={{ fill: '#475569', fontSize: 11 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: '#475569', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `₹${v}`} />
@@ -306,28 +309,31 @@ export default function Dashboard() {
                 </Link>
               </div>
               <div className="space-y-3">
-                {claims.map((c, i) => (
+                {dbClaims.slice(0, 5).map((c, i) => (
                   <motion.div key={i} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/[0.03] transition-colors" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.8 + i * 0.07 }}>
                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${c.status === 'paid' ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
                     <div className="flex-shrink-0 w-20">
-                      <div className="text-white text-xs font-bold">{c.id}</div>
-                      <div className="text-slate-500 text-[10px]">{c.date}</div>
+                      <div className="text-white text-xs font-bold">{c._id.substring(c._id.length - 8).toUpperCase()}</div>
+                      <div className="text-slate-500 text-[10px]">{new Date(c.createdAt).toLocaleDateString()}</div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-slate-300 text-xs font-medium">{c.type}</div>
-                      <div className="text-slate-500 text-[10px]">Lost: ₹{c.lost}</div>
+                      <div className="text-slate-300 text-xs font-medium">{c.scenario}</div>
+                      <div className="text-slate-500 text-[10px]">Tier: {c.tier}</div>
                     </div>
                     <div className="text-right">
-                      <div className="text-white text-sm font-black">₹{c.payout}</div>
-                      {c.time !== '—' && <div className="text-slate-500 text-[10px]">in {c.time}</div>}
+                      <div className="text-white text-sm font-black">₹{c.payoutINR}</div>
+                      {c.processingTime !== '—' && <div className="text-slate-500 text-[10px]">in {c.processingTime}</div>}
                     </div>
                     <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex-shrink-0 ${
-                      c.status === 'paid' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
+                      c.status === 'paid' ? 'bg-emerald-500/10 text-emerald-400' : c.status === 'blocked' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400'
                     }`}>
-                      {c.status === 'paid' ? 'Paid' : 'Processing'}
+                      {c.status === 'paid' ? 'Paid' : c.status === 'blocked' ? 'Blocked' : 'Processing'}
                     </div>
                   </motion.div>
                 ))}
+                {!dbClaims.length && (
+                   <div className="text-slate-500 text-sm text-center py-4">No real claims yet. Try a simulation!</div>
+                )}
               </div>
             </motion.div>
           </div>
@@ -343,7 +349,7 @@ export default function Dashboard() {
                   <ChevronUp className="w-3 h-3" /> +2 this week
                 </div>
               </div>
-              <WRSGauge score={87} />
+              <WRSGauge score={dashboardData.wrsScore} />
               <div className="mt-5 space-y-2.5">
                 {[
                   { label: 'Activity Consistency', val: 92, color: 'bg-emerald-500' },
@@ -380,14 +386,16 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="space-y-3">
-                {alerts.map((a, i) => (
+                {dashboardData.alerts.map((a: any, i: number) => {
+                  const AlertIcon = getAlertIcon(a.type);
+                  return (
                   <div key={i} className={`rounded-xl p-3 flex items-start gap-3 ${
                     a.severity === 'high' ? 'glass-red' : a.severity === 'medium' ? 'glass-amber' : 'glass'
                   }`}>
                     <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
                       a.severity === 'high' ? 'bg-red-500/20' : a.severity === 'medium' ? 'bg-amber-500/20' : 'bg-white/10'
                     }`}>
-                      <a.icon className={`w-3.5 h-3.5 ${a.severity === 'high' ? 'text-red-400' : a.severity === 'medium' ? 'text-amber-400' : 'text-slate-400'}`} />
+                      <AlertIcon className={`w-3.5 h-3.5 ${a.severity === 'high' ? 'text-red-400' : a.severity === 'medium' ? 'text-amber-400' : 'text-slate-400'}`} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-white text-xs font-bold">{a.type}</div>
@@ -398,7 +406,8 @@ export default function Dashboard() {
                     </div>
                     <div className="text-slate-600 text-[10px] flex-shrink-0">{a.time}</div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
 
@@ -410,14 +419,14 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <h3 className="text-white font-bold text-sm">Active Coverage</h3>
-                  <p className="text-slate-500 text-[10px]">Plan: Premium Shield</p>
+                  <p className="text-slate-500 text-[10px]">Plan: {policyData?.planName || 'Premium Shield'}</p>
                 </div>
               </div>
               <div className="space-y-3">
                 {[
-                  { label: 'Coverage %', val: '80%' },
-                  { label: 'Max daily payout', val: '₹960' },
-                  { label: 'This week premium', val: '₹49' },
+                  { label: 'Coverage %', val: `${policyData?.coveragePercent || 80}%` },
+                  { label: 'Max daily payout', val: `₹${policyData?.maxDailyPayout || 960}` },
+                  { label: 'This week premium', val: `₹${policyData?.weeklyPremiumINR || 49}` },
                   { label: 'Claims this month', val: '4 of 10' },
                 ].map((item, i) => (
                   <div key={i} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">

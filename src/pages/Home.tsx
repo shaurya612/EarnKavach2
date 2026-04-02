@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import {
   Shield, Zap, Brain, MapPin, TrendingUp, AlertTriangle, CheckCircle,
   ArrowRight, Star, Users, DollarSign, Activity, CloudRain, Bike,
@@ -52,6 +53,8 @@ const steps = [
 ]
 
 export default function Home() {
+  const { user, locationCity } = useAuth()
+  
   return (
     <div className="overflow-hidden">
       {/* ── HERO ── */}
@@ -162,8 +165,8 @@ export default function Home() {
                     <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-[#07070f]" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-white font-bold text-sm">Rahul Sharma</div>
-                    <div className="text-slate-400 text-xs">Zomato Partner · Mumbai</div>
+                    <div className="text-white font-bold text-sm">{user?.name || 'Rahul Sharma'}</div>
+                    <div className="text-slate-400 text-xs">{user?.platform || 'Zomato'} Partner · {locationCity || 'India'}</div>
                   </div>
                   <div className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                     <span className="text-emerald-400 text-xs font-semibold">Active</span>

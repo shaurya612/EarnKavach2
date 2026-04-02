@@ -3,6 +3,8 @@ import type { ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle2, Clock, DollarSign, Shield, TriangleAlert, Zap, Search, Sparkles, MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import axios from 'axios'
+import { useAuth } from '../context/AuthContext'
 import {
   CartesianGrid,
   ResponsiveContainer,
@@ -78,7 +80,7 @@ function defaultClaims(): ClaimRecord[] {
       dateISO: iso1,
       scenario: 'Heavy rain triggered coverage',
       platform: 'Zomato',
-      zone: 'Andheri East',
+      zone: 'North Zone',
       wrs: 87,
       rainfall: 46,
       rainThreshold: 30,
@@ -96,7 +98,7 @@ function defaultClaims(): ClaimRecord[] {
       dateISO: iso2,
       scenario: 'Traffic block compensation',
       platform: 'Swiggy',
-      zone: 'Bandra West',
+      zone: 'South District',
       wrs: 66,
       rainfall: 12,
       rainThreshold: 20,
@@ -273,32 +275,42 @@ export default function Claims() {
   const [search, setSearch] = useState('')
   const [activeId, setActiveId] = useState<string | null>(null)
 
-  useEffect(() => {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    let history: ClaimRecord[] = []
-    try {
-      history = raw ? (JSON.parse(raw) as ClaimRecord[]) : []
-    } catch {
-      history = []
-    }
-    if (!history.length) history = defaultClaims()
-    setClaims(history)
-    setActiveId(history[0]?.id ?? null)
-  }, [])
+  const { token, locationCity } = useAuth()
 
   useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key !== STORAGE_KEY) return
+    const fetchClaims = async () => {
       try {
-        const parsed = e.newValue ? (JSON.parse(e.newValue) as ClaimRecord[]) : []
-        setClaims(parsed.length ? parsed : defaultClaims())
-      } catch {
-        // ignore
+        const res = await axios.get('http://localhost:5000/claims', {
+           headers: { Authorization: `Bearer ${token}` }
+        })
+        const mapped = res.data.map((d: any) => ({
+            id: d._id.substring(d._id.length - 8).toUpperCase(),
+            dateISO: d.createdAt,
+            scenario: d.scenario,
+            platform: d.platform,
+            zone: locationCity || 'Central Grid',
+            wrs: 85, // mockup ui stat
+            rainfall: 45, // mockup ui stat
+            rainThreshold: 30, // mockup ui stat
+            ordersDropPct: 50, // mockup ui stat
+            userActive: true, // mockup ui stat
+            fraudScore: d.fraudScore,
+            tier: d.tier,
+            status: d.status,
+            lostHours: 3, // mockup ui stat
+            payoutINR: d.payoutINR,
+            processingTime: d.processingTime,
+            fraudNotes: d.fraudNotes || []
+        }))
+        setClaims(mapped)
+        setActiveId(mapped[0]?.id ?? null)
+      } catch (err) {
+        console.error(err)
+        setClaims(defaultClaims())
       }
     }
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
-  }, [])
+    if (token) fetchClaims()
+  }, [token])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -425,16 +437,10 @@ export default function Claims() {
                     type="button"
                     className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm font-bold hover:bg-white/10 transition-colors text-slate-200"
                     onClick={() => {
-                      localStorage.removeItem(STORAGE_KEY)
-                      const seeded = defaultClaims()
-                      localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded))
-                      setClaims(seeded)
-                      setFilter('all')
-                      setSearch('')
-                      setActiveId(seeded[0]?.id ?? null)
+                        window.location.reload()
                     }}
                   >
-                    Reset demo data
+                    Refresh Data
                   </button>
                 </div>
               </div>
