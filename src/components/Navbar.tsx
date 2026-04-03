@@ -1,16 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Shield, Menu, X, Zap, LogOut } from 'lucide-react'
+import { Shield, Menu, X, Zap, LogOut, Sun, Moon } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-
-const navLinks = [
-  { to: '/', label: 'Home' },
-  { to: '/dashboard', label: 'Dashboard' },
-  { to: '/demo', label: 'Live Demo' },
-  { to: '/claims', label: 'Claims' },
-  { to: '/admin', label: 'Admin Portal' },
-]
+import { useTheme } from '../context/ThemeContext'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -24,11 +17,28 @@ export default function Navbar() {
   }, [])
 
   const { isAuthenticated, user, logout } = useAuth()
+  const { theme, toggleTheme } = useTheme()
+  const navLinks = isAuthenticated
+    ? user?.role === 'admin'
+      ? [
+          { to: '/', label: 'Home' },
+          { to: '/admin', label: 'Admin Portal' },
+          { to: '/demo', label: 'Live Demo' },
+          { to: '/claims', label: 'Claims' },
+        ]
+      : [
+          { to: '/', label: 'Home' },
+          { to: '/dashboard', label: 'My Dashboard' },
+          { to: '/claims', label: 'Claims' },
+        ]
+    : [{ to: '/', label: 'Home' }, { to: '/login', label: 'Sign In' }];
 
   return (
     <motion.nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ? 'bg-[#07070f]/90 backdrop-blur-2xl border-b border-white/[0.06] shadow-2xl' : 'bg-transparent'
+        scrolled
+          ? 'border-b bg-white/80 shadow-xl backdrop-blur-2xl border-slate-200/80 dark:border-white/[0.06] dark:bg-[#07070f]/90 dark:shadow-2xl'
+          : 'bg-transparent'
       }`}
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
@@ -44,7 +54,7 @@ export default function Navbar() {
             </div>
           </div>
           <div className="flex items-baseline gap-0.5">
-            <span className="text-xl font-black text-white tracking-tight">Earn</span>
+            <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">Earn</span>
             <span className="text-xl font-black text-orange-500 tracking-tight">Kavach</span>
           </div>
           <div className="hidden md:flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
@@ -62,13 +72,15 @@ export default function Navbar() {
                 key={link.to}
                 to={link.to}
                 className={`relative px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  active ? 'text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  active
+                    ? 'text-slate-900 dark:text-white'
+                    : 'text-slate-600 hover:bg-slate-900/5 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white'
                 }`}
               >
                 {active && (
                   <motion.div
                     layoutId="nav-active"
-                    className="absolute inset-0 rounded-xl bg-white/8 border border-white/10"
+                    className="absolute inset-0 rounded-xl border border-slate-200 bg-slate-900/[0.04] dark:border-white/10 dark:bg-white/8"
                     transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
                   />
                 )}
@@ -83,12 +95,23 @@ export default function Navbar() {
 
         {/* CTA */}
         <div className="hidden md:flex items-center gap-3">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200/80 bg-white/60 text-slate-700 shadow-sm transition-all hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+            title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
-              <span className="text-slate-400 text-sm font-medium">Hello, {user?.name.split(' ')[0]}</span>
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                {user?.role === 'admin' ? 'Admin' : 'User'}: {user?.name.split(' ')[0]}
+              </span>
               <button
                 onClick={logout}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 text-white text-sm font-bold hover:bg-white/5 transition-all"
+                className="flex items-center gap-2 rounded-xl border border-slate-200/90 px-4 py-2 text-sm font-bold text-slate-800 transition-all hover:bg-slate-100 dark:border-white/10 dark:text-white dark:hover:bg-white/5"
               >
                 <LogOut className="w-4 h-4" />
                 Logout
@@ -110,7 +133,7 @@ export default function Navbar() {
 
         {/* Mobile menu button */}
         <button
-          className="md:hidden p-2 rounded-lg bg-white/5 text-white"
+          className="rounded-lg bg-slate-200/60 p-2 text-slate-800 dark:bg-white/5 dark:text-white md:hidden"
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -121,7 +144,7 @@ export default function Navbar() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="md:hidden bg-[#0d0d1e]/95 backdrop-blur-2xl border-t border-white/[0.06] px-6 py-4 space-y-1"
+            className="space-y-1 border-t border-slate-200/80 bg-white/95 px-6 py-4 backdrop-blur-2xl dark:border-white/[0.06] dark:bg-[#0d0d1e]/95 md:hidden"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -131,24 +154,40 @@ export default function Navbar() {
               <Link
                 key={link.to}
                 to={link.to}
-                className={`block px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                className={`block rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
                   location.pathname === link.to
-                    ? 'text-orange-400 bg-orange-500/10'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
+                    : 'text-slate-600 hover:bg-slate-900/5 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white'
                 }`}
                 onClick={() => setIsOpen(false)}
               >
                 {link.label}
               </Link>
             ))}
-            <div className="pt-2">
+            <div className="space-y-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  toggleTheme()
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200/90 px-4 py-3 text-sm font-bold text-slate-800 dark:border-white/10 dark:text-white"
+              >
+                {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+              </button>
               {isAuthenticated ? (
-                <button onClick={() => { logout(); setIsOpen(false); }} className="w-full px-4 py-3 rounded-xl border border-white/10 text-white text-sm font-bold">
+                <button
+                  onClick={() => {
+                    logout()
+                    setIsOpen(false)
+                  }}
+                  className="w-full rounded-xl border border-slate-200/90 px-4 py-3 text-sm font-bold text-slate-800 dark:border-white/10 dark:text-white"
+                >
                   Logout
                 </button>
               ) : (
                 <Link to="/login" onClick={() => setIsOpen(false)}>
-                  <button className="w-full px-4 py-3 rounded-xl bg-orange-500 text-white text-sm font-bold">
+                  <button className="w-full rounded-xl bg-orange-500 px-4 py-3 text-sm font-bold text-white">
                     Sign In
                   </button>
                 </Link>

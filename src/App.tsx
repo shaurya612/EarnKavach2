@@ -10,6 +10,7 @@ import Admin from './pages/Admin'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -22,6 +23,19 @@ import type { ReactNode } from 'react'
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return children;
+};
+
+const RoleProtectedRoute = ({
+  children,
+  allowedRoles,
+}: {
+  children: ReactNode
+  allowedRoles: Array<'worker' | 'admin'>
+}) => {
+  const { isAuthenticated, user } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!user || !allowedRoles.includes(user.role)) return <Navigate to="/dashboard" replace />;
   return children;
 };
 
@@ -40,9 +54,9 @@ function AnimatedRoutes() {
             </ProtectedRoute>
           } />
           <Route path="/demo" element={
-            <ProtectedRoute>
+            <RoleProtectedRoute allowedRoles={['admin']}>
               <Demo />
-            </ProtectedRoute>
+            </RoleProtectedRoute>
           } />
           <Route path="/claims" element={
             <ProtectedRoute>
@@ -50,9 +64,9 @@ function AnimatedRoutes() {
             </ProtectedRoute>
           } />
           <Route path="/admin" element={
-            <ProtectedRoute>
+            <RoleProtectedRoute allowedRoles={['admin']}>
               <Admin />
-            </ProtectedRoute>
+            </RoleProtectedRoute>
           } />
         </Routes>
       </motion.div>
@@ -63,13 +77,15 @@ function AnimatedRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <div className="min-h-screen bg-[#07070f] text-white">
-          <Navbar />
-          <AnimatedRoutes />
-          <Footer />
-        </div>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07070f] dark:text-white">
+            <Navbar />
+            <AnimatedRoutes />
+            <Footer />
+          </div>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   )
 }

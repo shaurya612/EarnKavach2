@@ -1,29 +1,20 @@
 const riskService = require('./riskService');
 const wrsService = require('./wrsService');
 
-const BASE_WEEKLY_PREMIUM = 30; // ₹30 base weekly premium
+/** Fixed weekly premium (product rule). Coverage still varies with WRS. */
+const WEEKLY_PREMIUM_INR = 49;
 
 /**
- * Calculates dynamic weekly premium and coverage based on user risk and reliability.
+ * Calculates coverage from WRS; weekly premium is always ₹49/week.
  * @returns {Promise<{ weeklyPremium: number, coveragePercent: number, planName: string }>}
  */
 const getDynamicPolicyConfig = async () => {
     try {
-        const riskResult = await riskService.getRiskScore();
-        let riskFactor = riskResult.risk_score || 1.1;
-
         const wrsResult = await wrsService.getWRS();
         let wrsScore = wrsResult.wrs_score || 85;
-
-        // Prevent division by zero
         if (wrsScore <= 0) wrsScore = 1;
 
-        // Formula: Weekly Premium = Base Rate × Risk Factor / (WRS / 100)
-        let premium = (BASE_WEEKLY_PREMIUM * riskFactor) / (wrsScore / 100);
-        premium = Math.round(premium);
-
-        // Determine coverage percent. Higher WRS -> better coverage
-        let coverage = 80; // default 80%
+        let coverage = 80;
         let planName = 'Standard Shield';
 
         if (wrsScore >= 80) {
@@ -35,7 +26,7 @@ const getDynamicPolicyConfig = async () => {
         }
 
         return {
-            weeklyPremium: premium,
+            weeklyPremium: WEEKLY_PREMIUM_INR,
             coveragePercent: coverage,
             planName
         };
@@ -43,7 +34,7 @@ const getDynamicPolicyConfig = async () => {
     } catch (e) {
         console.error("Policy Calculation Error:", e);
         return {
-            weeklyPremium: 49,
+            weeklyPremium: WEEKLY_PREMIUM_INR,
             coveragePercent: 80,
             planName: 'Standard Shield'
         };

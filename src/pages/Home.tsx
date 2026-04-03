@@ -87,18 +87,18 @@ export default function Home() {
               className="text-6xl xl:text-7xl font-black leading-[1.05] mb-6 tracking-tight"
               initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.7 }}
             >
-              <span className="block text-white">Shield Your</span>
+              <span className="block text-slate-900 dark:text-white">Shield Your</span>
               <span className="block gradient-text">Earnings.</span>
-              <span className="block text-white text-5xl xl:text-6xl mt-1">Empower Every</span>
-              <span className="block text-white text-5xl xl:text-6xl">Delivery.</span>
+              <span className="block text-slate-900 dark:text-white text-5xl xl:text-6xl mt-1">Empower Every</span>
+              <span className="block text-slate-900 dark:text-white text-5xl xl:text-6xl">Delivery.</span>
             </motion.h1>
 
             <motion.p
-              className="text-slate-400 text-lg leading-relaxed mb-9 max-w-lg"
+              className="text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-9 max-w-lg"
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
             >
               EarnKavach is India's first AI engine that{' '}
-              <span className="text-white font-semibold">predicts, prevents, and compensates</span>{' '}
+              <span className="text-slate-900 dark:text-white font-semibold">predicts, prevents, and compensates</span>{' '}
               income loss for Zomato & Swiggy partners — caused by rain, heat, traffic, and disruptions — <span className="text-orange-400 font-semibold">automatically</span>.
             </motion.p>
 
@@ -117,7 +117,7 @@ export default function Home() {
               </Link>
               <Link to="/demo">
                 <motion.button
-                  className="flex items-center gap-2.5 px-8 py-4 rounded-2xl glass border border-white/10 text-white font-bold text-base"
+                  className="flex items-center gap-2.5 px-8 py-4 rounded-2xl glass border border-slate-200/80 font-bold text-base text-slate-900 dark:border-white/10 dark:text-white"
                   whileHover={{ scale: 1.04, y: -2, backgroundColor: 'rgba(255,255,255,0.06)' }}
                   whileTap={{ scale: 0.97 }}
                 >
@@ -137,7 +137,7 @@ export default function Home() {
                 { val: '<5min', label: 'Payout Time' },
               ].map((s, i) => (
                 <div key={i} className="text-center">
-                  <div className="text-2xl font-black text-white">{s.val}</div>
+                  <div className="text-2xl font-black text-slate-900 dark:text-white">{s.val}</div>
                   <div className="text-[11px] text-slate-500 font-medium">{s.label}</div>
                 </div>
               ))}
@@ -160,13 +160,13 @@ export default function Home() {
                 <div className="flex items-center gap-3 mb-5">
                   <div className="relative">
                     <div className="w-11 h-11 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
-                      <Bike className="w-5 h-5 text-white" />
+                      <Bike className="h-5 w-5 text-white" />
                     </div>
-                    <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-[#07070f]" />
+                    <div className="absolute -right-0.5 -top-0.5 h-3.5 w-3.5 rounded-full border-2 border-slate-50 bg-emerald-400 dark:border-[#07070f]" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-white font-bold text-sm">{user?.name || 'Rahul Sharma'}</div>
-                    <div className="text-slate-400 text-xs">{user?.platform || 'Zomato'} Partner · {locationCity || 'India'}</div>
+                    <div className="text-slate-900 dark:text-white font-bold text-sm">{user?.name || 'Rahul Sharma'}</div>
+                    <div className="text-slate-600 dark:text-slate-400 text-xs">{user?.platform || 'Zomato'} Partner · {locationCity || 'India'}</div>
                   </div>
                   <div className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                     <span className="text-emerald-400 text-xs font-semibold">Active</span>
@@ -175,12 +175,12 @@ export default function Home() {
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="glass-orange rounded-2xl p-3.5">
-                    <div className="text-slate-400 text-xs mb-1 font-medium">Today's Income</div>
-                    <div className="text-white text-2xl font-black">₹620</div>
+                    <div className="text-slate-600 dark:text-slate-400 text-xs mb-1 font-medium">Today's Income</div>
+                    <div className="text-slate-900 dark:text-white text-2xl font-black">₹620</div>
                     <div className="text-red-400 text-xs mt-0.5 font-medium">↓ ₹230 disruption</div>
                   </div>
                   <div className="glass-purple rounded-2xl p-3.5">
-                    <div className="text-slate-400 text-xs mb-1 font-medium">WRS Score</div>
+                    <div className="text-slate-600 dark:text-slate-400 text-xs mb-1 font-medium">WRS Score</div>
                     <div className="text-purple-400 text-2xl font-black">87<span className="text-lg text-slate-500">/100</span></div>
                     <div className="text-emerald-400 text-xs mt-0.5 font-medium">↑ Excellent</div>
                   </div>
@@ -192,7 +192,7 @@ export default function Home() {
                     {[65, 85, 50, 90, 75, 40, 62].map((h, i) => (
                       <motion.div
                         key={i}
-                        className={`flex-1 rounded-sm ${i === 6 ? 'bg-orange-500' : 'bg-white/10'}`}
+                        className={`flex-1 rounded-sm ${i === 6 ? 'bg-orange-500' : 'bg-slate-300/70 dark:bg-white/10'}`}
                         style={{ height: `${h}%` }}
                         initial={{ scaleY: 0 }}
                         animate={{ scaleY: 1 }}
@@ -213,7 +213,7 @@ export default function Home() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-red-300 text-xs font-bold">Heavy Rain Alert</div>
-                    <div className="text-slate-400 text-xs">Auto-claim triggered · ₹230</div>
+                    <div className="text-slate-600 dark:text-slate-400 text-xs">Auto-claim triggered · ₹230</div>
                   </div>
                   <div className="w-2 h-2 rounded-full bg-red-400 animate-blink" />
                 </div>
@@ -228,10 +228,10 @@ export default function Home() {
               >
                 <div className="flex items-center gap-2 mb-1">
                   <CheckCircle className="w-4 h-4 text-emerald-400" />
-                  <span className="text-white text-xs font-bold">Claim Approved!</span>
+                  <span className="text-slate-900 dark:text-white text-xs font-bold">Claim Approved!</span>
                 </div>
                 <div className="text-3xl font-black gradient-text-green mb-0.5">₹230</div>
-                <div className="text-slate-400 text-xs">UPI · 3 minutes</div>
+                <div className="text-slate-600 dark:text-slate-400 text-xs">UPI · 3 minutes</div>
               </motion.div>
 
               {/* AI prediction badge */}
@@ -244,7 +244,7 @@ export default function Home() {
                 <div className="text-[10px] text-slate-500 font-medium mb-1.5">AI Prediction</div>
                 <div className="flex items-center gap-2">
                   <Brain className="w-4 h-4 text-purple-400" />
-                  <span className="text-white text-sm font-bold">₹850 expected</span>
+                  <span className="text-slate-900 dark:text-white text-sm font-bold">₹850 expected</span>
                 </div>
                 <div className="text-[10px] text-slate-500 mt-0.5">Confidence: 94.2%</div>
               </motion.div>
@@ -258,7 +258,7 @@ export default function Home() {
           animate={{ y: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 2.5 }}
         >
           <div className="text-slate-600 text-[11px] font-medium tracking-widest uppercase">Scroll</div>
-          <div className="w-5 h-8 rounded-full border border-white/20 flex items-start justify-center p-1">
+          <div className="flex h-8 w-5 items-start justify-center rounded-full border border-slate-300/90 p-1 dark:border-white/20">
             <motion.div
               className="w-1.5 h-2 rounded-full bg-orange-500/70"
               animate={{ y: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 1.8 }}
@@ -310,9 +310,9 @@ function ProblemSection() {
             <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
             <span className="text-red-300 text-xs font-semibold tracking-wide uppercase">The Crisis</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-white mb-5">Millions of Workers.  <span className="text-red-400">Zero Protection.</span></h2>
-          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-            India's gig delivery partners earn ₹400–1200/day but lose <strong className="text-white">20–60% of income</strong> to uncontrollable external disruptions — with no recourse.
+          <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-5">Millions of Workers.  <span className="text-red-400">Zero Protection.</span></h2>
+          <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto">
+            India's gig delivery partners earn ₹400–1200/day but lose <strong className="text-slate-900 dark:text-white">20–60% of income</strong> to uncontrollable external disruptions — with no recourse.
           </p>
         </motion.div>
 
@@ -327,7 +327,7 @@ function ProblemSection() {
               <div className={`text-5xl md:text-6xl font-black mb-3 ${s.color}`}>
                 {inView && <Counter end={s.value} prefix={s.prefix} suffix={s.suffix} duration={2} />}
               </div>
-              <div className="text-slate-400 text-sm leading-relaxed relative z-10">{s.label}</div>
+              <div className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed relative z-10">{s.label}</div>
             </motion.div>
           ))}
         </div>
@@ -337,7 +337,7 @@ function ProblemSection() {
           className="glass rounded-3xl p-8 md:p-10"
           initial={{ opacity: 0, y: 30 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.4, duration: 0.6 }}
         >
-          <h3 className="text-white font-bold text-xl mb-6">What causes income loss?</h3>
+          <h3 className="text-slate-900 dark:text-white font-bold text-xl mb-6">What causes income loss?</h3>
           <div className="grid md:grid-cols-4 gap-4">
             {[
               { icon: CloudRain, label: 'Heavy Rain', pct: 38, color: 'bg-blue-500' },
@@ -347,11 +347,11 @@ function ProblemSection() {
             ].map((item, i) => (
               <motion.div key={i} className="space-y-3" initial={{ opacity: 0, x: -20 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ delay: 0.5 + i * 0.08 }}>
                 <div className="flex items-center gap-2">
-                  <item.icon className="w-4 h-4 text-slate-400" />
+                  <item.icon className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                   <span className="text-slate-300 text-sm font-medium">{item.label}</span>
-                  <span className="ml-auto text-white font-bold text-sm">{item.pct}%</span>
+                  <span className="ml-auto text-slate-900 dark:text-white font-bold text-sm">{item.pct}%</span>
                 </div>
-                <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                <div className="h-2 overflow-hidden rounded-full bg-slate-200/90 dark:bg-white/5">
                   <motion.div
                     className={`h-full rounded-full ${item.color}`}
                     initial={{ width: 0 }}
@@ -387,8 +387,8 @@ function FeaturesSection() {
             <Zap className="w-3.5 h-3.5 text-purple-400" />
             <span className="text-purple-300 text-xs font-semibold tracking-wide uppercase">Core Capabilities</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-white mb-5">9 Features. One <span className="gradient-text">Shield.</span></h2>
-          <p className="text-slate-400 text-lg max-w-xl mx-auto">Every feature works in harmony to detect, predict, protect, and pay — faster than any human process.</p>
+          <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-5">9 Features. One <span className="gradient-text">Shield.</span></h2>
+          <p className="text-slate-600 dark:text-slate-400 text-lg max-w-xl mx-auto">Every feature works in harmony to detect, predict, protect, and pay — faster than any human process.</p>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-5">
@@ -404,10 +404,10 @@ function FeaturesSection() {
               <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: `radial-gradient(circle at 50% 0%, rgba(255,255,255,0.04), transparent 60%)` }} />
 
               <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${f.gradient} flex items-center justify-center mb-4 shadow-lg transition-all duration-300 ${f.glow} group-hover:scale-110`}>
-                <f.icon className="w-5 h-5 text-white" />
+                <f.icon className="h-5 w-5 text-white" />
               </div>
-              <h3 className="text-white font-bold text-base mb-2 group-hover:text-white">{f.title}</h3>
-              <p className="text-slate-400 text-sm leading-relaxed group-hover:text-slate-300 transition-colors">{f.desc}</p>
+              <h3 className="mb-2 text-base font-bold text-slate-900 group-hover:text-slate-800 dark:text-white dark:group-hover:text-white">{f.title}</h3>
+              <p className="text-sm leading-relaxed text-slate-600 transition-colors group-hover:text-slate-700 dark:text-slate-400 dark:group-hover:text-slate-300">{f.desc}</p>
 
               <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                 <ChevronRight className="w-4 h-4 text-slate-500" />
@@ -439,8 +439,8 @@ function HowItWorksSection() {
             <Clock className="w-3.5 h-3.5 text-orange-400" />
             <span className="text-orange-300 text-xs font-semibold tracking-wide uppercase">The Workflow</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-white mb-5">From <span className="text-orange-400">Disruption</span> to <span className="gradient-text-green">Payout</span><br/>in Minutes.</h2>
-          <p className="text-slate-400 text-lg max-w-xl mx-auto">8 automated steps. Zero paperwork. No delays.</p>
+          <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-5">From <span className="text-orange-400">Disruption</span> to <span className="gradient-text-green">Payout</span><br/>in Minutes.</h2>
+          <p className="text-slate-600 dark:text-slate-400 text-lg max-w-xl mx-auto">8 automated steps. Zero paperwork. No delays.</p>
         </motion.div>
 
         <div className="grid md:grid-cols-4 gap-5">
@@ -451,18 +451,18 @@ function HowItWorksSection() {
               initial={{ opacity: 0, y: 30 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: i * 0.08, duration: 0.5 }}
             >
               {i < steps.length - 1 && (
-                <div className="hidden md:block absolute top-8 left-[calc(100%+10px)] w-5 h-px bg-gradient-to-r from-white/20 to-transparent z-10" />
+                <div className="pointer-events-none absolute left-[calc(100%+10px)] top-8 z-10 hidden h-px w-5 bg-gradient-to-r from-slate-300 to-transparent dark:from-white/20 md:block" />
               )}
               <div className="glass rounded-2xl p-5 h-full hover:glow-orange transition-all duration-300 group">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-xl glass flex items-center justify-center border border-white/10">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200/80 glass dark:border-white/10">
                     <span className="text-xs font-black text-slate-500">{s.n}</span>
                   </div>
-                  <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-200/70 transition-transform group-hover:scale-110 dark:bg-white/5">
                     <s.icon className={`w-4 h-4 ${s.color}`} />
                   </div>
                 </div>
-                <h3 className="text-white font-bold text-sm mb-2">{s.title}</h3>
+                <h3 className="text-slate-900 dark:text-white font-bold text-sm mb-2">{s.title}</h3>
                 <p className="text-slate-500 text-xs leading-relaxed">{s.desc}</p>
               </div>
             </motion.div>
@@ -492,7 +492,7 @@ function AIArchSection() {
             <Brain className="w-3.5 h-3.5 text-purple-400" />
             <span className="text-purple-300 text-xs font-semibold tracking-wide uppercase">AI/ML Architecture</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-black text-white mb-5">Powered by <span className="gradient-text">Deep Intelligence</span></h2>
+          <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-5">Powered by <span className="gradient-text">Deep Intelligence</span></h2>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -534,25 +534,25 @@ function AIArchSection() {
               initial={{ opacity: 0, y: 40 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: i * 0.12 }}
             >
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-200/80 dark:bg-white/10">
                   <card.icon className={`w-5 h-5 ${card.iconColor}`} />
                 </div>
                 <div>
-                  <h3 className="text-white font-bold text-sm">{card.title}</h3>
+                  <h3 className="text-slate-900 dark:text-white font-bold text-sm">{card.title}</h3>
                   <p className="text-slate-500 text-xs">{card.subtitle}</p>
                 </div>
               </div>
               <ul className="space-y-2 mb-5">
                 {card.items.map((item, j) => (
-                  <li key={j} className="flex items-center gap-2 text-slate-300 text-xs">
-                    <div className="w-1 h-1 rounded-full bg-white/30 flex-shrink-0" />
+                  <li key={j} className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+                    <div className="h-1 w-1 flex-shrink-0 rounded-full bg-slate-400/80 dark:bg-white/30" />
                     {item}
                   </li>
                 ))}
               </ul>
-              <div className="bg-black/30 rounded-xl p-3 border border-white/5">
+              <div className="rounded-xl border border-slate-200/90 bg-slate-900/[0.04] p-3 dark:border-white/5 dark:bg-black/30">
                 <div className="text-slate-500 text-[10px] font-mono mb-1">Model outputs are used internally</div>
-                <div className="text-white text-[11px] font-mono leading-relaxed break-all">Expected earnings, tier, and fraud decisions are computed from the signals above.</div>
+                <div className="text-slate-900 dark:text-white text-[11px] font-mono leading-relaxed break-all">Expected earnings, tier, and fraud decisions are computed from the signals above.</div>
               </div>
             </motion.div>
           ))}
@@ -579,16 +579,16 @@ function CTASection() {
             <Shield className="w-3.5 h-3.5 text-emerald-400" />
             <span className="text-emerald-300 text-xs font-semibold tracking-wide uppercase">Start Today</span>
           </div>
-          <h2 className="text-5xl md:text-6xl font-black text-white mb-5 leading-tight">
+          <h2 className="text-5xl md:text-6xl font-black text-slate-900 dark:text-white mb-5 leading-tight">
             Your Earnings Deserve <span className="gradient-text">Protection.</span>
           </h2>
-          <p className="text-slate-400 text-xl mb-10 max-w-2xl mx-auto">
+          <p className="text-slate-600 dark:text-slate-400 text-xl mb-10 max-w-2xl mx-auto">
             Join thousands of delivery partners already using EarnKavach. Setup takes 2 minutes. Coverage starts immediately.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link to="/dashboard">
               <motion.button
-                className="flex items-center gap-3 px-10 py-5 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-black text-lg shadow-2xl shadow-orange-500/40"
+                className="flex items-center gap-3 px-10 py-5 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 font-black text-lg text-white shadow-2xl shadow-orange-500/40"
                 whileHover={{ scale: 1.05, boxShadow: '0 25px 70px rgba(249,115,22,0.5)' }}
                 whileTap={{ scale: 0.97 }}
               >
@@ -597,7 +597,7 @@ function CTASection() {
             </Link>
             <Link to="/demo">
               <motion.button
-                className="flex items-center gap-3 px-10 py-5 rounded-2xl gradient-border text-white font-black text-lg"
+                className="flex items-center gap-3 px-10 py-5 rounded-2xl gradient-border text-slate-900 dark:text-white font-black text-lg"
                 whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
               >
                 <BarChart3 className="w-6 h-6 text-purple-400" /> Watch Live Demo

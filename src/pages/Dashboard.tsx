@@ -52,7 +52,7 @@ function WRSGauge({ score }: { score: number }) {
         <svg width="160" height="100" viewBox="0 0 160 100">
           {/* Track */}
           <path d={`M ${cx - r},${cy} A ${r},${r} 0 0,1 ${cx + r},${cy}`}
-            fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="12" strokeLinecap="round" />
+            fill="none" className="stroke-slate-200 dark:stroke-[rgba(255,255,255,0.06)]" strokeWidth="12" strokeLinecap="round" />
           {/* Value arc */}
           <motion.path
             d={`M ${cx - r},${cy} A ${r},${r} 0 0,1 ${cx + r},${cy}`}
@@ -74,12 +74,12 @@ function WRSGauge({ score }: { score: number }) {
         </svg>
         <div className="absolute bottom-0 left-0 right-0 text-center">
           <motion.div
-            className="text-4xl font-black text-white"
+            className="text-4xl font-black text-slate-900 dark:text-white"
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
           >
             {score}
           </motion.div>
-          <div className="text-xs text-slate-500 font-medium">/100</div>
+          <div className="text-xs font-medium text-slate-500">/100</div>
         </div>
       </div>
       <div className="flex items-center gap-1.5 mt-2">
@@ -96,13 +96,13 @@ function WRSGauge({ score }: { score: number }) {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="glass rounded-xl p-3 border border-white/10 text-xs">
-      <p className="text-slate-400 mb-2 font-medium">{label}</p>
+    <div className="glass rounded-xl border border-slate-200/80 p-3 text-xs dark:border-white/10">
+      <p className="mb-2 font-medium text-slate-600 dark:text-slate-400">{label}</p>
       {payload.map((p: any, i: number) => (
         <div key={i} className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
-          <span className="text-slate-300">{p.name}:</span>
-          <span className="text-white font-bold">₹{p.value}</span>
+          <div className="h-2 w-2 rounded-full" style={{ backgroundColor: p.color }} />
+          <span className="text-slate-700 dark:text-slate-300">{p.name}:</span>
+          <span className="font-bold text-slate-900 dark:text-white">₹{p.value}</span>
         </div>
       ))}
     </div>
@@ -115,21 +115,146 @@ export default function Dashboard() {
   const [dbClaims, setDbClaims] = useState<any[]>([])
   const [dashboardData, setDashboardData] = useState<any>({ earningData: [], weeklyData: [], alerts: [], wrsScore: 85 })
   const [policyData, setPolicyData] = useState<any>(null)
+  const [autoDecision, setAutoDecision] = useState<any>(null)
+  const [payments, setPayments] = useState<any[]>([])
+  const [paying, setPaying] = useState(false)
+  const [payError, setPayError] = useState<string | null>(null)
+  const [paySuccess, setPaySuccess] = useState<string | null>(null)
 
   useEffect(() => {
     if (!token) return
-    axios.get('http://localhost:5000/claims', { headers: { Authorization: `Bearer ${token}` }})
-      .then(res => setDbClaims(res.data))
-      .catch(console.error)
+    const headers = { Authorization: `Bearer ${token}` };
 
-    axios.get('http://localhost:5000/gig/realtime-stats', { headers: { Authorization: `Bearer ${token}` }})
-      .then(res => setDashboardData(res.data))
-      .catch(console.error)
+    const refreshData = () => {
+      axios.get('http://localhost:5000/claims', { headers })
+        .then(res => setDbClaims(res.data))
+        .catch(console.error)
 
-    axios.get('http://localhost:5000/policy/my-policy', { headers: { Authorization: `Bearer ${token}` }})
-      .then(res => setPolicyData(res.data.policy))
-      .catch(console.error)
+      axios.get('http://localhost:5000/gig/realtime-stats', { headers })
+        .then(res => setDashboardData(res.data))
+        .catch(console.error)
+
+      axios.get('http://localhost:5000/policy/my-policy', { headers })
+        .then(res => setPolicyData(res.data.policy))
+        .catch(console.error)
+
+      axios.get('http://localhost:5000/dashboard', { headers })
+        .then(res => setAutoDecision(res.data))
+        .catch(console.error)
+
+      axios.get('http://localhost:5000/payment/my-payments', { headers })
+        .then(res => setPayments(res.data))
+        .catch(console.error)
+    };
+
+    refreshData();
+    const timer = setInterval(refreshData, 15000);
+    return () => clearInterval(timer);
   }, [token])
+
+  const ensureRazorpayLoaded = async () => {
+    if ((window as any).Razorpay) return true;
+    return new Promise<boolean>((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const payPremium = async () => {
+    if (!token) {
+      setPayError('Please sign in again.')
+      return
+    }
+    setPayError(null)
+    setPaySuccess(null)
+    setPaying(true)
+    try {
+      const loaded = await ensureRazorpayLoaded()
+      if (!loaded || !(window as any).Razorpay) {
+        setPayError('Could not load Razorpay. Disable ad-blockers or check your connection.')
+        setPaying(false)
+        return
+      }
+
+      const headers = { Authorization: `Bearer ${token}` }
+      const orderRes = await axios.post(
+        'http://localhost:5000/payment/create-premium-order',
+        {},
+        { headers },
+      )
+      const { order, key } = orderRes.data
+      if (!key || !order?.id) {
+        setPayError('Invalid order from server. Check backend logs and Razorpay keys in .env.')
+        setPaying(false)
+        return
+      }
+
+      // `amount` must match the order (paise). Omitting it breaks checkout in many Razorpay builds.
+      const rz = new (window as any).Razorpay({
+        key,
+        amount: order.amount,
+        currency: order.currency || 'INR',
+        name: 'EarnKavach Premium',
+        description: 'Weekly premium — ₹49',
+        order_id: order.id,
+        handler: async (response: any) => {
+          try {
+            const verifyRes = await axios.post(
+              'http://localhost:5000/payment/verify-premium',
+              response,
+              { headers },
+            )
+            const payRes = await axios.get('http://localhost:5000/payment/my-payments', { headers })
+            setPayments(payRes.data)
+            setPayError(null)
+            const emailed = verifyRes.data?.emailSent
+            setPaySuccess(
+              emailed
+                ? `Payment successful. A receipt was sent to ${user?.email || 'your email'}.`
+                : `Payment successful. Ask your admin to set SMTP_HOST / SMTP_USER / SMTP_PASS in the server to email receipts.`,
+            )
+          } catch (err: any) {
+            const msg =
+              err?.response?.data?.message ||
+              err?.message ||
+              'Payment succeeded but verification failed. Contact support with your payment id.'
+            setPayError(msg)
+            console.error(err)
+          } finally {
+            setPaying(false)
+          }
+        },
+        prefill: {
+          name: user?.name,
+          email: user?.email,
+        },
+        theme: { color: '#f97316' },
+        modal: {
+          ondismiss: () => {
+            setPaying(false)
+          },
+        },
+      })
+
+      rz.on('payment.failed', (ev: any) => {
+        const desc = ev?.error?.description || ev?.error?.reason || 'Payment failed'
+        setPayError(desc)
+        setPaying(false)
+      })
+      rz.open()
+    } catch (error: any) {
+      console.error(error)
+      setPayError(
+        error?.response?.data?.message ||
+          error?.message ||
+          'Could not start checkout. Confirm RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in backend .env.',
+      )
+      setPaying(false)
+    }
+  }
 
   const getAlertIcon = (type: string) => {
     if (type.includes('Rain')) return CloudRain
@@ -148,7 +273,7 @@ export default function Dashboard() {
   const stagger = (i: number) => ({ initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { delay: i * 0.08, duration: 0.5 } })
 
   return (
-    <div className="min-h-screen bg-[#07070f] pt-20">
+    <div className="min-h-screen bg-slate-50 pt-20 dark:bg-[#07070f]">
       {/* Header */}
       <div className="max-w-7xl mx-auto px-6 pt-6 pb-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -156,14 +281,14 @@ export default function Dashboard() {
             <div className="flex items-center gap-4">
               <div className="relative">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center shadow-lg shadow-orange-500/20">
-                  <Bike className="w-7 h-7 text-white" />
+                  <Bike className="h-7 w-7 text-white" />
                 </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-400 border-2 border-[#07070f]" />
+                <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-slate-50 bg-emerald-400 dark:border-[#07070f]" />
               </div>
               <div>
-                <h1 className="text-2xl font-black text-white">{user?.name || 'Rahul Sharma'}</h1>
+                <h1 className="text-2xl font-black text-slate-900 dark:text-white">{user?.name || 'Rahul Sharma'}</h1>
                 <div className="flex items-center gap-3 mt-0.5">
-                  <span className="text-slate-400 text-sm">{user?.platform || 'Zomato'} Partner · {locationCity}</span>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">{user?.platform || 'Zomato'} Partner · {locationCity}</span>
                   <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     <span className="text-emerald-400 text-[10px] font-semibold">ONLINE</span>
@@ -173,37 +298,52 @@ export default function Dashboard() {
             </div>
           </motion.div>
 
-          <motion.div className="flex items-center gap-3" {...stagger(1)}>
+          <motion.div className="flex flex-col items-stretch gap-2 md:flex-row md:items-center md:gap-3" {...stagger(1)}>
+            {paySuccess && (
+              <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs font-medium text-emerald-800 dark:text-emerald-200 md:max-w-md">
+                {paySuccess}
+              </div>
+            )}
+            {payError && (
+              <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-medium text-red-600 dark:text-red-300 md:order-last md:max-w-md">
+                {payError}
+              </div>
+            )}
             <div className="glass rounded-xl px-4 py-2.5 flex items-center gap-2">
               <Shield className="w-4 h-4 text-orange-400" />
-              <span className="text-white text-sm font-semibold">Coverage: {policyData?.coveragePercent || '80'}%</span>
+              <span className="text-slate-900 dark:text-white text-sm font-semibold">Coverage: {policyData?.coveragePercent || '80'}%</span>
             </div>
-            <div className="glass rounded-xl px-4 py-2.5 flex items-center gap-2">
-              <Star className="w-4 h-4 text-amber-400" />
-              <span className="text-white text-sm font-semibold">Premium: ₹{policyData?.weeklyPremiumINR || '49'}/wk</span>
+            <div className="glass flex items-center gap-2 rounded-xl px-4 py-2.5">
+              <Star className="h-4 w-4 text-amber-400" />
+              <span className="text-sm font-semibold text-slate-900 dark:text-white">Weekly premium: ₹49</span>
             </div>
-            <Link to="/demo">
-              <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-white text-sm font-bold transition-colors shadow-lg shadow-orange-500/20">
-                <Zap className="w-4 h-4" /> Simulate Claim
-              </button>
-            </Link>
+            <button
+              onClick={payPremium}
+              disabled={paying}
+              className="flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition-colors hover:bg-emerald-400 disabled:opacity-60"
+            >
+              <DollarSign className="w-4 h-4" /> {paying ? 'Processing...' : 'Pay ₹49'}
+            </button>
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200/90 bg-slate-200/50 px-5 py-2.5 text-sm font-bold text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+              <Lock className="w-4 h-4" /> View Only Mode
+            </div>
           </motion.div>
         </div>
 
         {/* Stat Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {[
+            {[
             { label: "Today's Income", val: '₹620', sub: '↓ ₹230 from disruption', subColor: 'text-red-400', icon: DollarSign, bg: 'glass-orange', iconColor: 'text-orange-400' },
-            { label: 'AI Predicted', val: '₹850', sub: '↑ Confidence 94.2%', subColor: 'text-emerald-400', icon: TrendingUp, bg: 'glass-purple', iconColor: 'text-purple-400' },
+              { label: 'AI Predicted', val: `₹${Math.round(autoDecision?.payout_estimate || 850)}`, sub: 'Automated by ML models', subColor: 'text-emerald-400', icon: TrendingUp, bg: 'glass-purple', iconColor: 'text-purple-400' },
             { label: 'Active Claim', val: `₹${stats.pending}`, sub: 'Processing · 2 min', subColor: 'text-amber-400', icon: Zap, bg: 'glass-amber', iconColor: 'text-amber-400' },
             { label: 'Monthly Saved', val: `₹${stats.saved}`, sub: `↑ ${stats.paidCount} claims this month`, subColor: 'text-emerald-400', icon: CheckCircle, bg: 'glass-emerald', iconColor: 'text-emerald-400' },
           ].map((card, i) => (
             <motion.div key={i} className={`${card.bg} rounded-2xl p-5 relative overflow-hidden`} {...stagger(i + 2)}>
               <div className="flex items-start justify-between mb-3">
-                <div className="text-slate-400 text-xs font-medium">{card.label}</div>
+                <div className="text-xs font-medium text-slate-600 dark:text-slate-400">{card.label}</div>
                 <card.icon className={`w-4 h-4 ${card.iconColor}`} />
               </div>
-              <div className="text-2xl font-black text-white mb-1">{card.val}</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white mb-1">{card.val}</div>
               <div className={`text-xs font-semibold ${card.subColor}`}>{card.sub}</div>
             </motion.div>
           ))}
@@ -221,7 +361,7 @@ export default function Dashboard() {
             <motion.div className="glass rounded-3xl p-6" {...stagger(6)}>
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-white font-bold text-lg">Income Prediction vs Actual</h2>
+                  <h2 className="text-slate-900 dark:text-white font-bold text-lg">Income Prediction vs Actual</h2>
                   <p className="text-slate-500 text-xs mt-0.5">Shaded area = EarnKavach compensation</p>
                 </div>
                 <div className="flex gap-2">
@@ -229,7 +369,7 @@ export default function Dashboard() {
                     <button
                       key={t}
                       onClick={() => setActiveTab(t)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeTab === t ? 'bg-orange-500 text-white' : 'text-slate-400 hover:text-white bg-white/5'}`}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${activeTab === t ? 'bg-orange-500 text-white' : 'bg-slate-200/70 text-slate-600 hover:text-slate-900 dark:bg-white/5 dark:text-slate-400 dark:hover:text-white'}`}
                     >
                       {t === 'week' ? '7D' : '30D'}
                     </button>
@@ -280,7 +420,7 @@ export default function Dashboard() {
             <motion.div className="glass rounded-3xl p-6" {...stagger(7)}>
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-white font-bold text-lg">This Week's Earnings</h2>
+                  <h2 className="text-slate-900 dark:text-white font-bold text-lg">This Week's Earnings</h2>
                   <p className="text-slate-500 text-xs mt-0.5">Total: ₹4,980 · vs predicted ₹5,920</p>
                 </div>
                 <div className="px-3 py-1.5 rounded-lg glass-orange text-xs font-semibold text-orange-400">₹940 recovered</div>
@@ -301,7 +441,7 @@ export default function Dashboard() {
             {/* Claims table */}
             <motion.div className="glass rounded-3xl p-6" {...stagger(8)}>
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-white font-bold text-lg">Recent Claims</h2>
+                <h2 className="text-slate-900 dark:text-white font-bold text-lg">Recent Claims</h2>
                 <Link to="/claims">
                   <button className="flex items-center gap-1 text-orange-400 text-sm hover:text-orange-300 transition-colors">
                     View all <ArrowRight className="w-3.5 h-3.5" />
@@ -313,7 +453,7 @@ export default function Dashboard() {
                   <motion.div key={i} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/[0.03] transition-colors" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.8 + i * 0.07 }}>
                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${c.status === 'paid' ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
                     <div className="flex-shrink-0 w-20">
-                      <div className="text-white text-xs font-bold">{c._id.substring(c._id.length - 8).toUpperCase()}</div>
+                      <div className="text-slate-900 dark:text-white text-xs font-bold">{c._id.substring(c._id.length - 8).toUpperCase()}</div>
                       <div className="text-slate-500 text-[10px]">{new Date(c.createdAt).toLocaleDateString()}</div>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -321,7 +461,7 @@ export default function Dashboard() {
                       <div className="text-slate-500 text-[10px]">Tier: {c.tier}</div>
                     </div>
                     <div className="text-right">
-                      <div className="text-white text-sm font-black">₹{c.payoutINR}</div>
+                      <div className="text-slate-900 dark:text-white text-sm font-black">₹{c.payoutINR}</div>
                       {c.processingTime !== '—' && <div className="text-slate-500 text-[10px]">in {c.processingTime}</div>}
                     </div>
                     <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex-shrink-0 ${
@@ -344,7 +484,7 @@ export default function Dashboard() {
             {/* WRS Score */}
             <motion.div className="glass rounded-3xl p-6 text-center" {...stagger(3)}>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-white font-bold">WRS Score</h2>
+                <h2 className="text-slate-900 dark:text-white font-bold">WRS Score</h2>
                 <div className="flex items-center gap-1 text-emerald-400 text-xs font-semibold">
                   <ChevronUp className="w-3 h-3" /> +2 this week
                 </div>
@@ -361,7 +501,7 @@ export default function Dashboard() {
                   <div key={i} className="space-y-1">
                     <div className="flex justify-between text-[11px]">
                       <span className="text-slate-400">{item.label}</span>
-                      <span className="text-white font-bold">{item.val}%</span>
+                      <span className="text-slate-900 dark:text-white font-bold">{item.val}%</span>
                     </div>
                     <div className="h-1.5 rounded-full bg-white/5">
                       <motion.div
@@ -379,7 +519,7 @@ export default function Dashboard() {
             {/* Active Alerts */}
             <motion.div className="glass rounded-3xl p-6" {...stagger(4)}>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-white font-bold">Live Alerts</h2>
+                <h2 className="text-slate-900 dark:text-white font-bold">Live Alerts</h2>
                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20">
                   <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
                   <span className="text-red-400 text-[10px] font-bold">3 ACTIVE</span>
@@ -398,7 +538,7 @@ export default function Dashboard() {
                       <AlertIcon className={`w-3.5 h-3.5 ${a.severity === 'high' ? 'text-red-400' : a.severity === 'medium' ? 'text-amber-400' : 'text-slate-400'}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-white text-xs font-bold">{a.type}</div>
+                      <div className="text-slate-900 dark:text-white text-xs font-bold">{a.type}</div>
                       <div className="text-slate-500 text-[10px]">{a.zone}</div>
                       <div className={`text-[10px] font-semibold mt-1 ${a.severity === 'high' ? 'text-red-300' : a.severity === 'medium' ? 'text-amber-300' : 'text-slate-400'}`}>
                         {a.action}
@@ -418,7 +558,7 @@ export default function Dashboard() {
                   <Shield className="w-4.5 h-4.5 text-orange-400" />
                 </div>
                 <div>
-                  <h3 className="text-white font-bold text-sm">Active Coverage</h3>
+                  <h3 className="text-slate-900 dark:text-white font-bold text-sm">Active Coverage</h3>
                   <p className="text-slate-500 text-[10px]">Plan: {policyData?.planName || 'Premium Shield'}</p>
                 </div>
               </div>
@@ -431,12 +571,12 @@ export default function Dashboard() {
                 ].map((item, i) => (
                   <div key={i} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
                     <span className="text-slate-400 text-xs">{item.label}</span>
-                    <span className="text-white text-xs font-bold">{item.val}</span>
+                    <span className="text-slate-900 dark:text-white text-xs font-bold">{item.val}</span>
                   </div>
                 ))}
               </div>
               <Link to="/demo">
-                <button className="w-full mt-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-white text-xs font-bold transition-colors">
+                <button className="mt-4 w-full rounded-xl bg-orange-500 py-2.5 text-xs font-bold text-white transition-colors hover:bg-orange-400">
                   Simulate New Claim
                 </button>
               </Link>
@@ -446,12 +586,19 @@ export default function Dashboard() {
             <motion.div className="glass-emerald rounded-3xl p-5" {...stagger(6)}>
               <div className="flex items-center gap-2 mb-2">
                 <Lock className="w-4 h-4 text-emerald-400" />
-                <span className="text-white font-bold text-sm">Fraud Shield Active</span>
+                <span className="text-slate-900 dark:text-white font-bold text-sm">Fraud Shield Active</span>
               </div>
-              <p className="text-slate-400 text-xs">All activity signals are clean. No anomalies detected in the last 30 days.</p>
+              <p className="text-slate-400 text-xs">
+                Fraud: {autoDecision?.fraud_status || 'clear'} · Suspicious: {autoDecision?.suspicious_flag ? 'yes' : 'no'} ·
+                Weather: {autoDecision?.weather_status?.weather_condition || 'syncing'}
+              </p>
+              <p className="text-slate-500 text-xs mt-2">
+                Premium payments: {payments.filter(p => p.type === 'premium' && p.status === 'paid').length} successful ·
+                Auto payout queue: {payments.filter(p => p.type === 'claim_payout').length}
+              </p>
               <div className="flex items-center gap-2 mt-3 pt-3 border-t border-emerald-500/10">
                 <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-400 text-xs font-semibold">Trusted tier — instant payouts</span>
+                <span className="text-emerald-400 text-xs font-semibold">Read-only dashboard for user accounts</span>
               </div>
             </motion.div>
           </div>

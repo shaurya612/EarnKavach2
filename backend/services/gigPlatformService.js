@@ -41,6 +41,26 @@ const getMockGigData = (platform, userId) => {
   return { earningData, weeklyData, alerts };
 };
 
+const fetchWorkerProfileFromPlatform = (platform, userId) => {
+  // Simulate an HTTP fetch to api.zomato.com/worker or api.swiggy.com/partner
+  const isSwiggy = platform === 'Swiggy';
+  return {
+      apiId: `${isSwiggy ? 'SW' : 'ZM'}-${userId.toString().substring(0, 6).toUpperCase()}`,
+      platform: platform,
+      contact: "+91-9876543210",
+      activeStatus: true, // Mocked as currently on a shift
+      location: {
+          lat: 28.7041 + (Math.random() * 0.1),
+          lng: 77.1025 + (Math.random() * 0.1)
+      },
+      deliveryHistory: [
+          { timestamp: new Date(Date.now() - 3600000), status: 'Completed', amount: 120 },
+          { timestamp: new Date(Date.now() - 7200000), status: 'Completed', amount: 80 }
+      ]
+  };
+};
+
 module.exports = {
-  getMockGigData
+  getMockGigData,
+  fetchWorkerProfileFromPlatform
 };

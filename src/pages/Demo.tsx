@@ -317,6 +317,7 @@ export default function Demo() {
 
   const [runStatus, setRunStatus] = useState<'idle' | 'running' | 'none' | ClaimStatus>('idle')
   const [steps, setSteps] = useState<Array<'idle' | 'running' | 'done' | 'fail'>>(['idle', 'idle', 'idle', 'idle', 'idle'])
+  const claimFinalizeLockRef = useRef(false)
 
   const tier = useMemo(() => computeTier(wrs), [wrs])
 
@@ -388,6 +389,7 @@ export default function Demo() {
   }, [liveMode, runStatus])
 
   const runSimulation = async () => {
+    claimFinalizeLockRef.current = false
     setRunStatus('running')
     setSelectedClaimId(null)
     setSteps(['idle', 'idle', 'idle', 'idle', 'idle'])
@@ -446,45 +448,70 @@ export default function Demo() {
     }
   }
 
-  const triggerRazorpayCheckout = async (amount: number, claimId: string) => {
-    if (!(window as any).Razorpay) {
-      console.warn('Razorpay SDK not loaded');
-      return;
+  const ensureRazorpayLoaded = async (): Promise<boolean> => {
+    if ((window as any).Razorpay) return true
+    return new Promise((resolve) => {
+      const script = document.createElement('script')
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+      script.onload = () => resolve(true)
+      script.onerror = () => resolve(false)
+      document.body.appendChild(script)
+    })
+  }
+
+  const triggerRazorpayCheckout = async (amountInr: number, claimId: string) => {
+    const ok = await ensureRazorpayLoaded()
+    if (!ok || !(window as any).Razorpay) {
+      window.alert('Could not load Razorpay checkout. Check your network or ad-blockers.')
+      return
     }
+    const amount = Math.max(1, Math.round(amountInr))
     try {
-      const { data } = await axios.post('http://localhost:5000/payment/create-order', { amount }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const { data } = await axios.post(
+        'http://localhost:5000/payment/create-order',
+        { amount },
+        { headers: { Authorization: `Bearer ${token}` } },
+      )
+      const key = data.key
+      if (!key || !data.id) {
+        window.alert('Invalid order response from server.')
+        return
+      }
       const options = {
-        key: 'rzp_test_PlaceholderKeyId1234',
-        amount: data.amount,
-        currency: data.currency,
+        key,
+        currency: data.currency || 'INR',
         name: 'EarnKavach Protect',
         description: `Micro-Payout for Claim #${claimId}`,
         order_id: data.id,
-        handler: function (response: any) {
-          console.log("Payment success sync:", response.razorpay_payment_id);
+        handler: function () {
+          /* Demo micro-payout: server verification route can be added when claim_payout uses same flow */
         },
         prefill: {
           name: user?.name,
           email: user?.email || 'worker@earnkavach.com',
-          contact: '9999999999'
+          contact: '9999999999',
         },
         theme: {
-          color: '#f97316'
-        }
-      };
-      const rzp = new (window as any).Razorpay(options);
-      rzp.on('payment.failed', function (response: any){
-        console.error("Payment failed", response.error.description);
-      });
-      rzp.open();
-    } catch (e) {
-      console.error('Razorpay Error:', e);
+          color: '#f97316',
+        },
+      }
+      const rzp = new (window as any).Razorpay(options)
+      rzp.on('payment.failed', function (response: any) {
+        const desc = response?.error?.description || 'Payment failed'
+        window.alert(desc)
+      })
+      rzp.open()
+    } catch (e: any) {
+      const msg = e?.response?.data?.message || e?.message || 'Could not start payment'
+      console.error('Razorpay Error:', e)
+      window.alert(msg)
     }
   }
 
   const finalizeClaimToStorage = async () => {
+    if (runStatus !== 'paid' && runStatus !== 'blocked' && runStatus !== 'none') return
+    if (claimFinalizeLockRef.current) return
+    claimFinalizeLockRef.current = true
     try {
       const response = await axios.post('http://localhost:5000/claim', {
         fraud_data: [1, heatX, heatY, rainfall, ordersDropPct, userActive ? 1 : 0],
@@ -500,20 +527,19 @@ export default function Demo() {
       setSelectedClaimId(claimDbId)
 
       if (runStatus === 'paid' && payout > 0) {
-        triggerRazorpayCheckout(Math.round(payout), claimDbId);
+        void triggerRazorpayCheckout(Math.round(payout), claimDbId)
       }
     } catch (err) {
-      console.error("Failed to save claim to API:", err)
+      claimFinalizeLockRef.current = false
+      console.error('Failed to save claim to API:', err)
       setSelectedClaimId(createId())
     }
   }
 
   // When run ends (runStatus not running), persist record once.
   useEffect(() => {
-    // Persist only final outcome (demo-friendly: one record per "simulate" end).
     if (runStatus === 'paid' || runStatus === 'blocked' || runStatus === 'none') {
-      finalizeClaimToStorage()
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+      void finalizeClaimToStorage()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runStatus])

@@ -7,18 +7,25 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
-  background-color: #07070f;
-  color: #ffffff;
+  background-color: #f8fafc;
+  color: #0f172a;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   overflow-x: hidden;
   margin: 0;
 }
+html.dark body {
+  background-color: #07070f;
+  color: #ffffff;
+}
 #root { width: 100%; max-width: 100%; text-align: left; border: none; }
 
 ::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: #0d0d1a; }
-::-webkit-scrollbar-thumb { background: rgba(249,115,22,0.5); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(249,115,22,0.8); }
+::-webkit-scrollbar-track { background: #e2e8f0; }
+::-webkit-scrollbar-thumb { background: rgba(249,115,22,0.45); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(249,115,22,0.65); }
+html.dark ::-webkit-scrollbar-track { background: #0d0d1a; }
+html.dark ::-webkit-scrollbar-thumb { background: rgba(249,115,22,0.5); }
+html.dark ::-webkit-scrollbar-thumb:hover { background: rgba(249,115,22,0.8); }
 
 .gradient-text {
   background: linear-gradient(135deg, #f97316 0%, #fb923c 35%, #a855f7 70%, #818cf8 100%);
@@ -36,40 +43,67 @@ body {
 }
 
 .glass {
-  background: rgba(255,255,255,0.035);
+  background: rgba(15,23,42,0.04);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(15,23,42,0.08);
+}
+html.dark .glass {
+  background: rgba(255,255,255,0.035);
   border: 1px solid rgba(255,255,255,0.07);
 }
 .glass-orange {
-  background: rgba(249,115,22,0.06);
+  background: rgba(249,115,22,0.09);
   backdrop-filter: blur(24px);
+  border: 1px solid rgba(249,115,22,0.22);
+}
+html.dark .glass-orange {
+  background: rgba(249,115,22,0.06);
   border: 1px solid rgba(249,115,22,0.15);
 }
 .glass-purple {
-  background: rgba(168,85,247,0.06);
+  background: rgba(168,85,247,0.08);
   backdrop-filter: blur(24px);
+  border: 1px solid rgba(168,85,247,0.2);
+}
+html.dark .glass-purple {
+  background: rgba(168,85,247,0.06);
   border: 1px solid rgba(168,85,247,0.15);
 }
 .glass-emerald {
-  background: rgba(52,211,153,0.06);
+  background: rgba(52,211,153,0.08);
   backdrop-filter: blur(24px);
+  border: 1px solid rgba(52,211,153,0.2);
+}
+html.dark .glass-emerald {
+  background: rgba(52,211,153,0.06);
   border: 1px solid rgba(52,211,153,0.15);
 }
 .glass-red {
-  background: rgba(239,68,68,0.06);
+  background: rgba(239,68,68,0.08);
   backdrop-filter: blur(24px);
+  border: 1px solid rgba(239,68,68,0.2);
+}
+html.dark .glass-red {
+  background: rgba(239,68,68,0.06);
   border: 1px solid rgba(239,68,68,0.15);
 }
 .glass-amber {
-  background: rgba(251,191,36,0.06);
+  background: rgba(251,191,36,0.09);
   backdrop-filter: blur(24px);
+  border: 1px solid rgba(251,191,36,0.22);
+}
+html.dark .glass-amber {
+  background: rgba(251,191,36,0.06);
   border: 1px solid rgba(251,191,36,0.15);
 }
 
 .grid-bg {
-  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0);
+  background-image: radial-gradient(circle at 1px 1px, rgba(15,23,42,0.07) 1px, transparent 0);
   background-size: 40px 40px;
+}
+html.dark .grid-bg {
+  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0);
 }
 
 .glow-orange { box-shadow: 0 0 40px rgba(249,115,22,0.25), 0 0 80px rgba(249,115,22,0.1); }
@@ -81,9 +115,13 @@ body {
 .card-hover:hover { transform: translateY(-6px); }
 
 .gradient-border {
+  background: linear-gradient(#f8fafc, #f8fafc) padding-box,
+              linear-gradient(135deg, rgba(249,115,22,0.45), rgba(168,85,247,0.45)) border-box;
+  border: 1px solid transparent;
+}
+html.dark .gradient-border {
   background: linear-gradient(#07070f, #07070f) padding-box,
               linear-gradient(135deg, rgba(249,115,22,0.5), rgba(168,85,247,0.5)) border-box;
-  border: 1px solid transparent;
 }
 
 .neon-orange { text-shadow: 0 0 10px rgba(249,115,22,0.8), 0 0 20px rgba(249,115,22,0.5); }
@@ -145,9 +183,14 @@ body {
 }
 
 .recharts-default-tooltip {
-  background: rgba(13,13,26,0.95) !important;
-  border: 1px solid rgba(255,255,255,0.1) !important;
+  background: rgba(255,255,255,0.95) !important;
+  border: 1px solid rgba(15,23,42,0.1) !important;
   border-radius: 12px !important;
   backdrop-filter: blur(20px) !important;
 }
-.recharts-tooltip-label { color: #94a3b8 !important; }
+html.dark .recharts-default-tooltip {
+  background: rgba(13,13,26,0.95) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+.recharts-tooltip-label { color: #475569 !important; }
+html.dark .recharts-tooltip-label { color: #94a3b8 !important; }

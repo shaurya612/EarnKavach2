@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { ADMIN_EMAIL } = require('../services/adminBootstrapService');
 
 // Generate JWT
 const generateToken = (id) => {
@@ -41,6 +42,7 @@ const registerUser = async (req, res) => {
         name: user.name,
         email: user.email,
         platform: user.platform,
+        role: user.role,
         token: generateToken(user._id),
       });
     } else {
@@ -56,16 +58,23 @@ const registerUser = async (req, res) => {
 // @access  Public
 const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, mode } = req.body;
 
     const user = await User.findOne({ email });
 
     if (user && (await user.matchPassword(password))) {
+      if (mode && mode !== user.role) {
+        return res.status(403).json({ message: `This account is not allowed for ${mode} sign in` });
+      }
+      if (mode === 'admin' && user.email !== ADMIN_EMAIL) {
+        return res.status(403).json({ message: 'Only the configured admin account can sign in as admin' });
+      }
       res.json({
         _id: user.id,
         name: user.name,
         email: user.email,
         platform: user.platform,
+        role: user.role,
         token: generateToken(user._id),
       });
     } else {
@@ -85,6 +94,7 @@ const getMe = async (req, res) => {
       id: req.user._id,
       email: req.user.email,
       name: req.user.name,
+      role: req.user.role
     };
     res.status(200).json(user);
   } catch (error) {

@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [mode, setMode] = useState<'worker' | 'admin'>('worker');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -22,10 +23,11 @@ export default function Login() {
       const response = await axios.post('http://localhost:5000/auth/login', {
         email,
         password,
+        mode,
       });
 
       const { token, ...userData } = response.data;
-      login(userData, token);
+      login(userData, token, mode);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to login');
     } finally {
@@ -48,8 +50,36 @@ export default function Login() {
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-orange-500/20 text-orange-400 mb-4">
             <Lock className="w-6 h-6" />
           </div>
-          <h1 className="text-3xl font-black text-white">Welcome Back</h1>
-          <p className="text-slate-400 mt-2">Sign in to your EarnKavach dashboard</p>
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white">Welcome Back</h1>
+          <p className="mt-2 text-slate-600 dark:text-slate-400">Sign in to your EarnKavach dashboard</p>
+        </div>
+
+        <div className="mb-6">
+          <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Sign In Mode</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setMode('worker')}
+              className={`rounded-xl border py-2 text-sm font-bold transition-all ${
+                mode === 'worker'
+                  ? 'border-orange-400/40 bg-orange-500/20 text-orange-600 dark:text-orange-300'
+                  : 'border-slate-200/90 bg-slate-200/50 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400'
+              }`}
+            >
+              Sign in as User
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('admin')}
+              className={`rounded-xl border py-2 text-sm font-bold transition-all ${
+                mode === 'admin'
+                  ? 'border-purple-400/40 bg-purple-500/20 text-purple-600 dark:text-purple-300'
+                  : 'border-slate-200/90 bg-slate-200/50 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-400'
+              }`}
+            >
+              Sign in as Admin
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -61,14 +91,14 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">Email Address</label>
+            <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Email Address</label>
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/50 transition-all"
+                className="w-full rounded-xl border border-slate-200/90 bg-slate-50 py-3 pl-12 pr-4 text-slate-900 transition-all placeholder:text-slate-400 focus:border-orange-500/50 focus:outline-none focus:ring-1 focus:ring-orange-500/50 dark:border-white/10 dark:bg-white/5 dark:text-white"
                 placeholder="you@example.com"
                 required
               />
@@ -76,14 +106,14 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">Password</label>
+            <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Password</label>
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/50 transition-all"
+                className="w-full rounded-xl border border-slate-200/90 bg-slate-50 py-3 pl-12 pr-4 text-slate-900 transition-all placeholder:text-slate-400 focus:border-orange-500/50 focus:outline-none focus:ring-1 focus:ring-orange-500/50 dark:border-white/10 dark:bg-white/5 dark:text-white"
                 placeholder="••••••••"
                 required
               />
@@ -100,7 +130,7 @@ export default function Login() {
           </button>
         </form>
 
-        <p className="text-center text-slate-400 mt-6 text-sm">
+        <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
           Don't have an account?{' '}
           <Link to="/register" className="text-orange-400 hover:text-orange-300 font-bold">
             Sign up

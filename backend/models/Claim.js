@@ -10,6 +10,8 @@ const claimSchema = new mongoose.Schema({
   tier: { type: String, enum: ['Trusted', 'Suspicious', 'Fraud'], required: true },
   status: { type: String, enum: ['paid', 'processing', 'blocked', 'rejected', 'approved'], required: true },
   payoutINR: { type: Number, required: true },
+  payoutStatus: { type: String, enum: ['not_applicable', 'queued', 'processed', 'failed'], default: 'not_applicable' },
+  payoutOrderId: { type: String },
   processingTime: { type: String },
   fraudNotes: [{ type: String }],
 }, { timestamps: true });

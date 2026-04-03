@@ -51,8 +51,8 @@ export default function Register() {
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-purple-500/20 text-purple-400 mb-4">
             <UserPlus className="w-6 h-6" />
           </div>
-          <h1 className="text-3xl font-black text-white">Create Account</h1>
-          <p className="text-slate-400 mt-2">Join EarnKavach as a delivery partner</p>
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white">Create Account</h1>
+          <p className="mt-2 text-slate-600 dark:text-slate-400">Join EarnKavach as a delivery partner</p>
         </div>
 
         {error && (
@@ -64,14 +64,14 @@ export default function Register() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">Full Name</label>
+            <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Full Name</label>
             <div className="relative">
               <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                className="w-full rounded-xl border border-slate-200/90 bg-slate-50 py-3 pl-12 pr-4 text-slate-900 transition-all placeholder:text-slate-400 focus:border-purple-500/50 focus:outline-none focus:ring-1 focus:ring-purple-500/50 dark:border-white/10 dark:bg-white/5 dark:text-white"
                 placeholder="Rahul Sharma"
                 required
               />
@@ -79,14 +79,14 @@ export default function Register() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">Email Address</label>
+            <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Email Address</label>
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                className="w-full rounded-xl border border-slate-200/90 bg-slate-50 py-3 pl-12 pr-4 text-slate-900 transition-all placeholder:text-slate-400 focus:border-purple-500/50 focus:outline-none focus:ring-1 focus:ring-purple-500/50 dark:border-white/10 dark:bg-white/5 dark:text-white"
                 placeholder="you@example.com"
                 required
               />
@@ -94,26 +94,30 @@ export default function Register() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">Connect Delivery Platform</label>
-            <div className="grid grid-cols-2 gap-3 mb-2">
+            <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Connect Delivery Platform</label>
+            <div className="mb-2 grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setPlatform('Zomato')}
-                className={`py-3 px-4 rounded-xl flex items-center justify-center gap-2 font-bold transition-all ${
-                  platform === 'Zomato' ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-bold transition-all ${
+                  platform === 'Zomato'
+                    ? 'bg-red-500 text-white shadow-lg shadow-red-500/20'
+                    : 'bg-slate-200/60 text-slate-600 hover:bg-slate-300/70 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10'
                 }`}
               >
-                <div className={`w-2 h-2 rounded-full ${platform === 'Zomato' ? 'bg-white' : 'bg-red-500'}`} />
+                <div className={`h-2 w-2 rounded-full ${platform === 'Zomato' ? 'bg-white' : 'bg-red-500'}`} />
                 Zomato
               </button>
               <button
                 type="button"
                 onClick={() => setPlatform('Swiggy')}
-                className={`py-3 px-4 rounded-xl flex items-center justify-center gap-2 font-bold transition-all ${
-                  platform === 'Swiggy' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-bold transition-all ${
+                  platform === 'Swiggy'
+                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20'
+                    : 'bg-slate-200/60 text-slate-600 hover:bg-slate-300/70 dark:bg-white/5 dark:text-slate-400 dark:hover:bg-white/10'
                 }`}
               >
-                <div className={`w-2 h-2 rounded-full ${platform === 'Swiggy' ? 'bg-white' : 'bg-orange-500'}`} />
+                <div className={`h-2 w-2 rounded-full ${platform === 'Swiggy' ? 'bg-white' : 'bg-orange-500'}`} />
                 Swiggy
               </button>
             </div>
@@ -123,7 +127,7 @@ export default function Register() {
                 <Bike className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input
                   type="text"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                  className="w-full rounded-xl border border-slate-200/90 bg-slate-50 py-3 pl-12 pr-4 text-slate-900 transition-all placeholder:text-slate-400 focus:border-purple-500/50 focus:outline-none focus:ring-1 focus:ring-purple-500/50 dark:border-white/10 dark:bg-white/5 dark:text-white"
                   placeholder={`${platform} Partner ID / Phone`}
                   required
                 />
@@ -132,14 +136,14 @@ export default function Register() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-2">Password</label>
+            <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Password</label>
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
+                className="w-full rounded-xl border border-slate-200/90 bg-slate-50 py-3 pl-12 pr-4 text-slate-900 transition-all placeholder:text-slate-400 focus:border-purple-500/50 focus:outline-none focus:ring-1 focus:ring-purple-500/50 dark:border-white/10 dark:bg-white/5 dark:text-white"
                 placeholder="••••••••"
                 required
               />
@@ -156,7 +160,7 @@ export default function Register() {
           </button>
         </form>
 
-        <p className="text-center text-slate-400 mt-6 text-sm">
+        <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
           Already have an account?{' '}
           <Link to="/login" className="text-purple-400 hover:text-purple-300 font-bold">
             Sign in

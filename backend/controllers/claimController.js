@@ -13,6 +13,9 @@ const processClaim = async (req, res) => {
   try {
     const { fraud_data, income_data, actual_income, coverage, scenario, platform } = req.body;
 
+    // Enriched worker context (from workerActivityMiddleware)
+    const claimContext = req.claimContext || {};
+
     // Validate inputs
     if (!fraud_data || !income_data || actual_income === undefined || coverage === undefined) {
       return res.status(400).json({ 
@@ -51,8 +54,20 @@ const processClaim = async (req, res) => {
     const expected_income = incomeResult.expected_income;
 
     // 3. Evaluate Parametric Triggers
-    const triggerVerification = await triggerEngine.validateTriggers(scenario || 'unknown');
-    let triggerFailed = !triggerVerification.isValid;
+    // If background sync has already evaluated weather/traffic for this worker, prefer that signal.
+    let triggerFailed = false;
+    let triggerFailureReason = null;
+
+    if (claimContext && typeof claimContext.weatherEligible === 'boolean') {
+      triggerFailed = !claimContext.weatherEligible;
+      if (triggerFailed) {
+        triggerFailureReason = 'Background sync: Worker not in eligible weather/traffic zone';
+      }
+    } else {
+      const triggerVerification = await triggerEngine.validateTriggers(scenario || 'unknown');
+      triggerFailed = !triggerVerification.isValid;
+      triggerFailureReason = triggerVerification.failureReason || 'Weather/Traffic Verification Failed';
+    }
 
     if (triggerFailed) {
       const claim = await Claim.create({
@@ -66,12 +81,13 @@ const processClaim = async (req, res) => {
         status: 'rejected',
         payoutINR: 0,
         processingTime: 'Rejected',
-        fraudNotes: [triggerVerification.failureReason || 'Weather/Traffic Verification Failed']
+        fraudNotes: [triggerFailureReason],
+        workerContext: claimContext
       });
 
       return res.status(200).json({
         status: "rejected",
-        reason: triggerVerification.failureReason,
+        reason: triggerFailureReason,
         claim_id: claim._id
       });
     }
@@ -107,7 +123,8 @@ const processClaim = async (req, res) => {
         status: status,
         payoutINR: payout,
         processingTime: tier === 'Trusted' ? '1 min' : '15 min (verification)',
-        fraudNotes: []
+        fraudNotes: [],
+        workerContext: claimContext
     });
 
     // 6. Return Final Decision

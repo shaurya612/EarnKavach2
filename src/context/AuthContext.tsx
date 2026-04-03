@@ -7,13 +7,16 @@ interface User {
   name: string;
   email: string;
   platform: string;
+  role: 'worker' | 'admin';
 }
+
+type LoginMode = 'worker' | 'admin';
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   locationCity: string;
-  login: (userData: User, token: string) => void;
+  login: (userData: User, token: string, mode?: LoginMode) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -55,12 +58,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   }, []);
 
-  const login = (userData: User, tokenData: string) => {
+  const login = (userData: User, tokenData: string, mode?: LoginMode) => {
     setUser(userData);
     setToken(tokenData);
     localStorage.setItem('earnkavach_token', tokenData);
     localStorage.setItem('earnkavach_user', JSON.stringify(userData));
-    navigate('/demo');
+    if ((mode || userData.role) === 'admin') {
+      navigate('/admin');
+      return;
+    }
+    navigate('/dashboard');
   };
 
   const logout = () => {
