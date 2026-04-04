@@ -11,7 +11,7 @@ async function test() {
     };
     
     // Note: The external APIs might be down or hibernating if they are free render instances.
-    const res = await axios.post('http://localhost:5000/claim', claimPayload);
+    const res = await axios.post('https://earnkavach2.onrender.com/claim', claimPayload);
     console.log("Response:", res.data);
   } catch (error) {
     if (error.response) {
