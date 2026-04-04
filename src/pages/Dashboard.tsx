@@ -126,23 +126,23 @@ export default function Dashboard() {
     const headers = { Authorization: `Bearer ${token}` };
 
     const refreshData = () => {
-      axios.get('http://localhost:5000/claims', { headers })
+      axios.get('https://earnkavach2.onrender.com/claims', { headers })
         .then(res => setDbClaims(res.data))
         .catch(console.error)
 
-      axios.get('http://localhost:5000/gig/realtime-stats', { headers })
+      axios.get('https://earnkavach2.onrender.com/gig/realtime-stats', { headers })
         .then(res => setDashboardData(res.data))
         .catch(console.error)
 
-      axios.get('http://localhost:5000/policy/my-policy', { headers })
+      axios.get('https://earnkavach2.onrender.com/policy/my-policy', { headers })
         .then(res => setPolicyData(res.data.policy))
         .catch(console.error)
 
-      axios.get('http://localhost:5000/dashboard', { headers })
+      axios.get('https://earnkavach2.onrender.com/dashboard', { headers })
         .then(res => setAutoDecision(res.data))
         .catch(console.error)
 
-      axios.get('http://localhost:5000/payment/my-payments', { headers })
+      axios.get('https://earnkavach2.onrender.com/payment/my-payments', { headers })
         .then(res => setPayments(res.data))
         .catch(console.error)
     };
@@ -181,7 +181,7 @@ export default function Dashboard() {
 
       const headers = { Authorization: `Bearer ${token}` }
       const orderRes = await axios.post(
-        'http://localhost:5000/payment/create-premium-order',
+        'https://earnkavach2.onrender.com/payment/create-premium-order',
         {},
         { headers },
       )
@@ -203,11 +203,11 @@ export default function Dashboard() {
         handler: async (response: any) => {
           try {
             const verifyRes = await axios.post(
-              'http://localhost:5000/payment/verify-premium',
+              'https://earnkavach2.onrender.com/payment/verify-premium',
               response,
               { headers },
             )
-            const payRes = await axios.get('http://localhost:5000/payment/my-payments', { headers })
+            const payRes = await axios.get('https://earnkavach2.onrender.com/payment/my-payments', { headers })
             setPayments(payRes.data)
             setPayError(null)
             const emailed = verifyRes.data?.emailSent
