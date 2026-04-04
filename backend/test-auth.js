@@ -2,7 +2,7 @@ const axios = require('axios');
 
 async function test() {
   try {
-    const res = await axios.post('http://localhost:5000/auth/register', {
+    const res = await axios.post('https://earnkavach2.onrender.com/auth/register', {
       name: "Utkarsh",
       email: "utkarsh.arora09@gmail.com",
       password: "password123",
