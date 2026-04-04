@@ -20,7 +20,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/auth/login', {
+      const response = await axios.post('https://earnkavach2.onrender.com/auth/login', {
         email,
         password,
         mode,
