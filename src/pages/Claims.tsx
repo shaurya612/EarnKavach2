@@ -280,7 +280,7 @@ export default function Claims() {
   useEffect(() => {
     const fetchClaims = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/claims', {
+        const res = await axios.get('https://earnkavach2.onrender.com/claims', {
            headers: { Authorization: `Bearer ${token}` }
         })
         const mapped = res.data.map((d: any) => ({
