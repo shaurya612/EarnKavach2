@@ -18,19 +18,19 @@ export default function Admin() {
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
-        const statsRes = await axios.get('http://localhost:5000/admin/stats', {
+        const statsRes = await axios.get('https://earnkavach2.onrender.com/admin/stats', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        const claimsRes = await axios.get('http://localhost:5000/admin/claims', {
+        const claimsRes = await axios.get('https://earnkavach2.onrender.com/admin/claims', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        const workersRes = await axios.get('http://localhost:5000/admin/workers', {
+        const workersRes = await axios.get('https://earnkavach2.onrender.com/admin/workers', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        const modelHealthRes = await axios.get('http://localhost:5000/admin/model-health', {
+        const modelHealthRes = await axios.get('https://earnkavach2.onrender.com/admin/model-health', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        const scheduleRes = await axios.get('http://localhost:5000/admin/payout-schedule', {
+        const scheduleRes = await axios.get('https://earnkavach2.onrender.com/admin/payout-schedule', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setStats(statsRes.data);
