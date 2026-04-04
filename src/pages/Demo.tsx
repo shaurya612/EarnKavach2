@@ -468,7 +468,7 @@ export default function Demo() {
     const amount = Math.max(1, Math.round(amountInr))
     try {
       const { data } = await axios.post(
-        'http://localhost:5000/payment/create-order',
+        'https://earnkavach2.onrender.com/payment/create-order',
         { amount },
         { headers: { Authorization: `Bearer ${token}` } },
       )
@@ -513,7 +513,7 @@ export default function Demo() {
     if (claimFinalizeLockRef.current) return
     claimFinalizeLockRef.current = true
     try {
-      const response = await axios.post('http://localhost:5000/claim', {
+      const response = await axios.post('https://earnkavach2.onrender.com/claim', {
         fraud_data: [1, heatX, heatY, rainfall, ordersDropPct, userActive ? 1 : 0],
         income_data: [expectedHourly, lostHours, userActive ? 1 : 0],
         actual_income: 0,
