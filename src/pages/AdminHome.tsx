@@ -2,8 +2,8 @@ import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import {
-  Shield, Activity, Database, Server, Users, BarChart3, 
-  Lock, ArrowRight, Zap, Globe, AlertTriangle, Layers
+  Shield, Activity, Database, Server, BarChart3, 
+  Lock, Zap, Globe, AlertTriangle, Layers
 } from 'lucide-react'
 
 const features = [
