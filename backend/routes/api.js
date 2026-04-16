@@ -47,5 +47,6 @@ apiRouter.get('/admin/stats', protect, admin, adminController.getSystemStats);
 apiRouter.get('/admin/workers', protect, admin, adminController.getWorkers);
 apiRouter.get('/admin/model-health', protect, admin, adminController.getModelHealth);
 apiRouter.get('/admin/payout-schedule', protect, admin, adminController.getPayoutSchedule);
+apiRouter.get('/admin/predictive-analytics', protect, admin, adminController.getPredictiveAnalytics);
 
 module.exports = apiRouter;

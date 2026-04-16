@@ -74,9 +74,22 @@ function AnimatedRoutes() {
   )
 }
 
+import { useEffect } from 'react'
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <ThemeProvider>
         <AuthProvider>
           <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07070f] dark:text-white">

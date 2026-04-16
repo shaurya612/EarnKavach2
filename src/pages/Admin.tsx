@@ -13,6 +13,7 @@ export default function Admin() {
   const [workers, setWorkers] = useState<any[]>([]);
   const [modelHealth, setModelHealth] = useState<any>(null);
   const [payoutSchedule, setPayoutSchedule] = useState<any>(null);
+  const [predictive, setPredictive] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -33,11 +34,15 @@ export default function Admin() {
         const scheduleRes = await axios.get('https://earnkavach2.onrender.com/admin/payout-schedule', {
           headers: { Authorization: `Bearer ${token}` }
         });
+        const predictiveRes = await axios.get('https://earnkavach2.onrender.com/admin/predictive-analytics', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         setStats(statsRes.data);
         setClaims(claimsRes.data);
         setWorkers(workersRes.data);
         setModelHealth(modelHealthRes.data);
         setPayoutSchedule(scheduleRes.data);
+        setPredictive(predictiveRes.data);
       } catch (err) {
         console.error("Failed to fetch admin data", err);
       } finally {
@@ -104,13 +109,21 @@ export default function Admin() {
         </motion.div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
           <div className="glass rounded-2xl p-5 border border-white/5">
             <div className="flex justify-between items-start mb-2">
               <div className="text-slate-400 text-sm font-semibold">Total Payouts</div>
               <DollarSign className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="text-3xl font-black text-white">₹{stats?.totalPaidOut?.toLocaleString()}</div>
+          </div>
+          <div className="glass rounded-2xl p-5 border border-white/5">
+            <div className="flex justify-between items-start mb-2">
+              <div className="text-slate-400 text-sm font-semibold">Loss Ratio</div>
+              <Activity className="w-4 h-4 text-purple-400" />
+            </div>
+            <div className="text-3xl font-black text-white">{stats?.lossRatio ? (stats.lossRatio * 100).toFixed(1) : 0}%</div>
+            <div className="text-purple-400/80 text-xs mt-1">Total Paid / Premium</div>
           </div>
           <div className="glass rounded-2xl p-5 border border-white/5">
             <div className="flex justify-between items-start mb-2">
@@ -303,6 +316,38 @@ export default function Admin() {
             </table>
           </div>
         </div>
+
+        {/* Predictive Analytics Section */}
+        {predictive && (
+          <div className="mt-8 glass rounded-2xl border border-white/5 p-5 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none" />
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <div>
+                <h3 className="text-white font-bold text-lg">Predictive Analytics (7-Day Forecast)</h3>
+                <p className="text-slate-400 text-xs mt-1">
+                  AI prediction powered by Open-Meteo & Risk ML Model to estimate claims scale based on future disruptions.
+                </p>
+              </div>
+            </div>
+            <div className="grid md:grid-cols-3 gap-4 relative z-10">
+              <div className="rounded-xl p-4 border border-purple-500/20 bg-purple-500/5">
+                <div className="text-purple-400 font-bold uppercase text-xs mb-1">Expected Rainfall</div>
+                <div className="text-white text-3xl font-black">{predictive.expectedRainfall_7d?.toFixed(1)}<span className="text-lg text-slate-500 text-normal ml-1">mm</span></div>
+                <div className="text-slate-400 text-xs mt-1">Next 7 Days (Aggregate)</div>
+              </div>
+              <div className="rounded-xl p-4 border border-purple-500/20 bg-purple-500/5">
+                <div className="text-purple-400 font-bold uppercase text-xs mb-1">Extreme Weather Risk</div>
+                <div className="text-white text-3xl font-black">{predictive.extremeWeatherEvent}</div>
+                <div className="text-slate-400 text-xs mt-1">Base disruption multiplier</div>
+              </div>
+              <div className="rounded-xl p-4 border border-purple-500/20 bg-purple-500/5">
+                <div className="text-purple-400 font-bold uppercase text-xs mb-1">Expected Claim Volume</div>
+                <div className="text-white text-3xl font-black">+{predictive.predictedClaimsVolume}</div>
+                <div className="text-slate-400 text-xs mt-1">Predicted surge via Risk Model</div>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

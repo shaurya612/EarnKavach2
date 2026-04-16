@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import AdminHome from './AdminHome'
 import {
   Shield, Zap, Brain, MapPin, TrendingUp, AlertTriangle, CheckCircle,
   ArrowRight, Star, Users, DollarSign, Activity, CloudRain, Bike,
@@ -53,6 +54,14 @@ const steps = [
 ]
 
 export default function Home() {
+  const { user } = useAuth()
+  if (user?.role === 'admin') {
+    return <AdminHome />
+  }
+  return <ClientHome />
+}
+
+function ClientHome() {
   const { user, locationCity } = useAuth()
   
   return (

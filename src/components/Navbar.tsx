@@ -49,9 +49,7 @@ export default function Navbar() {
         <Link to="/" className="flex items-center gap-3 group">
           <div className="relative">
             <div className="absolute inset-0 rounded-xl bg-orange-500/30 blur-md group-hover:blur-lg transition-all" />
-            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center shadow-lg">
-              <Shield className="w-5 h-5 text-white" />
-            </div>
+            <img src="/logo.png" alt="EarnKavach Logo" className="relative w-10 h-10 rounded-xl shadow-lg object-contain bg-[#07070f] p-1" />
           </div>
           <div className="flex items-baseline gap-0.5">
             <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">Earn</span>

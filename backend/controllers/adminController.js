@@ -2,6 +2,8 @@ const Claim = require('../models/Claim');
 const User = require('../models/User');
 const WorkerProfile = require('../models/WorkerProfile');
 const { getModelHealthSnapshot } = require('../services/modelHealthService');
+const riskService = require('../services/riskService');
+const axios = require('axios');
 
 // @desc    Get all claims system-wide
 // @route   GET /api/admin/claims
@@ -33,10 +35,16 @@ const getSystemStats = async (req, res) => {
       if (c.status === 'processing') activeProcessingCount++;
     });
 
+    const assumedWeeklyPremium = 49;
+    const totalPremiumsEarned = totalUsers * assumedWeeklyPremium;
+    const lossRatio = totalPremiumsEarned > 0 ? (totalPaidOut / totalPremiumsEarned) : 0;
+
     res.json({
       totalUsers,
       totalClaims: claims.length,
       totalPaidOut,
+      totalPremiumsEarned,
+      lossRatio,
       fraudBlockedCount,
       activeProcessingCount
     });
@@ -101,10 +109,51 @@ const getPayoutSchedule = (req, res) => {
   });
 };
 
+// @desc    Get predictive analytics for next 7 days using Weather + Risk ML
+// @route   GET /api/admin/predictive-analytics
+// @access  Private/Admin
+const getPredictiveAnalytics = async (req, res) => {
+  try {
+    // Default coords (e.g. Bangalore or standard test location)
+    // We fetch future 7-day weather from open-meteo
+    const lat = 12.9716;
+    const lon = 77.5946;
+    const weatherReq = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,precipitation_sum&timezone=auto`);
+    
+    // Calculate expected disruption based on 7-day aggregate prediction
+    let totalRainfall = 0;
+    const dailyData = weatherReq.data.daily;
+    if (dailyData && dailyData.precipitation_sum) {
+      totalRainfall = dailyData.precipitation_sum.reduce((a, b) => a + Number(b), 0);
+    }
+    
+    const extremeWeatherEvent = totalRainfall > 50 ? 'High' : (totalRainfall > 20 ? 'Medium' : 'Low');
+    
+    // Feed it to the existing Risk model
+    // [rain, aqi, disruptions]
+    const riskInput = [totalRainfall, 150, extremeWeatherEvent === 'High' ? 20 : (extremeWeatherEvent === 'Medium' ? 10 : 2)];
+    const riskResult = await riskService.getRiskScore(riskInput);
+    
+    const baseExpectedClaims = 10;
+    const predictedClaimsVolume = Math.round(baseExpectedClaims * (riskResult.risk_score || 1.0));
+    
+    res.json({
+      expectedRainfall_7d: totalRainfall,
+      extremeWeatherEvent,
+      averagePredictedRiskScore: riskResult.risk_score || 1.0,
+      predictedClaimsVolume
+    });
+  } catch (error) {
+    console.error('Error in predictive analytics:', error);
+    res.status(500).json({ message: 'Failed to generate predictive analytics' });
+  }
+};
+
 module.exports = {
   getAllClaims,
   getSystemStats,
   getWorkers,
   getModelHealth,
-  getPayoutSchedule
+  getPayoutSchedule,
+  getPredictiveAnalytics
 };

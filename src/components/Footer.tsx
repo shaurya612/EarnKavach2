@@ -9,9 +9,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center">
-                <Shield className="w-4 h-4 text-white" />
-              </div>
+              <img src="/logo.png" alt="EarnKavach Logo" className="w-9 h-9 rounded-xl object-contain drop-shadow-md bg-[#07070f] p-1" />
               <span className="text-lg font-black"><span className="text-slate-900 dark:text-white">Earn</span><span className="text-orange-500">Kavach</span></span>
             </div>
             <p className="max-w-xs text-sm leading-relaxed text-slate-600 dark:text-slate-400">
