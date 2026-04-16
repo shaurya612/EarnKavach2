@@ -706,7 +706,7 @@ export default function Demo() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
                 <div className="glass-orange rounded-2xl p-3.5">
                   <div className="text-slate-500 text-[10px] font-semibold mb-1">Rainfall</div>
                   <div className="text-white text-2xl font-black">{rainfall}mm</div>
@@ -726,7 +726,7 @@ export default function Demo() {
                 <div className="text-white font-bold text-sm">Claim Outcome</div>
               </div>
 
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="min-w-0">
                   <div className="text-slate-500 text-xs">Tier Coverage</div>
                   <div className="text-white text-2xl font-black">{Math.round(coveragePercent * 100)}%</div>
@@ -734,7 +734,7 @@ export default function Demo() {
                     {tier === 'Trusted' ? 'Instant payout path' : tier === 'Suspicious' ? 'Verification path' : 'Fraud block path'}
                   </div>
                 </div>
-                <div className="w-[140px]">
+                <div className="w-full sm:w-[140px]">
                   <div className="rounded-2xl bg-white/5 border border-white/10 p-3.5">
                     <div className="flex items-center gap-2">
                       <TriangleAlert className="w-4 h-4 text-red-400" />
@@ -796,7 +796,7 @@ export default function Demo() {
         <div className="grid lg:grid-cols-3 gap-6 items-start">
           <div className="lg:col-span-2 space-y-6">
             <div className="glass rounded-3xl p-5">
-              <div className="flex items-center justify-between mb-5 gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-4">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-purple-400" />
                   <div>

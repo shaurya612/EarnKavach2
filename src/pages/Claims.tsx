@@ -384,7 +384,7 @@ export default function Claims() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Stat label="Paid" value={`${summary.paidCount}`} sub={`${formatINR(summary.paidTotal)} total`} icon={<CheckCircle2 className="w-4 h-4 text-emerald-400" />} cls="glass-emerald" />
                 <Stat label="Processing" value={`${summary.processingCount}`} sub="Pending verification" icon={<Clock className="w-4 h-4 text-amber-400" />} cls="glass-amber" />
                 <Stat label="Blocked" value={`${summary.blockedCount}`} sub="Fraud tier flagged" icon={<TriangleAlert className="w-4 h-4 text-red-400" />} cls="glass-red" />
@@ -421,8 +421,8 @@ export default function Claims() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex-1">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+                <div className="flex-1 w-full">
                   <div className="text-slate-500 text-[11px] font-bold mb-2">Search</div>
                   <input
                     value={search}
@@ -431,7 +431,7 @@ export default function Claims() {
                     className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-orange-500/40"
                   />
                 </div>
-                <div className="w-[160px]">
+                <div className="w-full sm:w-[160px]">
                   <div className="text-slate-500 text-[11px] font-bold mb-2">Action</div>
                   <button
                     type="button"
@@ -458,11 +458,11 @@ export default function Claims() {
                       onClick={() => setActiveId(c.id)}
                     >
                       <div
-                        className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+                        className={`flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-2xl border transition-all ${
                           active?.id === c.id ? 'bg-white/[0.06] border-orange-500/30' : 'bg-white/[0.02] border-white/10 hover:bg-white/[0.05]'
                         }`}
                       >
-                        <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${c.status === 'paid' ? 'bg-emerald-400' : c.status === 'blocked' ? 'bg-red-400' : 'bg-amber-400 animate-pulse'}`} />
+                        <div className={`w-2 h-2 rounded-full hidden sm:block flex-shrink-0 mt-1 ${c.status === 'paid' ? 'bg-emerald-400' : c.status === 'blocked' ? 'bg-red-400' : 'bg-amber-400 animate-pulse'}`} />
                         <div className="flex-shrink-0 w-24">
                           <div className="text-white text-xs font-black">{c.id}</div>
                           <div className="text-slate-500 text-[10px] mt-0.5">{new Date(c.dateISO).toLocaleDateString('en-IN')}</div>
@@ -478,8 +478,11 @@ export default function Claims() {
                             <span>WRS {c.wrs}/100</span>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-white text-sm font-black">{formatINR(c.payoutINR)}</div>
+                        <div className="text-left sm:text-right mt-2 sm:mt-0">
+                          <div className="text-white text-sm font-black flex items-center justify-between sm:block">
+                             <div className={`w-2 h-2 rounded-full sm:hidden mr-2 inline-block ${c.status === 'paid' ? 'bg-emerald-400' : c.status === 'blocked' ? 'bg-red-400' : 'bg-amber-400 animate-pulse'}`} />
+                             {formatINR(c.payoutINR)}
+                          </div>
                           <div className={`mt-2 inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold border ${statusPill(c.status)}`}>
                             {c.status === 'paid' ? 'Paid' : c.status === 'blocked' ? 'Blocked' : 'Processing'}
                           </div>
@@ -529,7 +532,7 @@ export default function Claims() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 mt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
                       <MiniLine label="Rainfall" value={`${active.rainfall}mm`} />
                       <MiniLine label="Orders Drop" value={`${active.ordersDropPct}%`} />
                       <MiniLine label="Lost Hours" value={`${active.lostHours}h`} />
