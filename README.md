@@ -632,9 +632,9 @@ C --> P[Worker Dashboard]
 
 ---
 
-##  Demo Video
+##  Demo Video of the Solution
 
-https://drive.google.com/file/d/1XoFsz_zLYSK0RltHkpgFJtBmBA5V6CJh/view?usp=drivesdk
+https://youtu.be/Cg1-azjHrRk?si=M2klDfPcPvop5LxZ 
 
 ---
 
@@ -655,3 +655,7 @@ https://drive.google.com/file/d/1XoFsz_zLYSK0RltHkpgFJtBmBA5V6CJh/view?usp=drive
 EarnKavach transforms insurance into an "AI-driven real-time income protection system", ensuring financial stability for gig workers even under unpredictable disruptions.
 
 ---
+
+##  Pitch Deck
+
+https://drive.google.com/file/d/1ZB57wlx_1e_kcDK2rlo97Cfc2KJhvAl1/view?usp=sharing 
