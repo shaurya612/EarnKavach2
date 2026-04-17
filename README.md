@@ -659,3 +659,13 @@ EarnKavach transforms insurance into an "AI-driven real-time income protection s
 ##  Pitch Deck
 
 https://drive.google.com/file/d/1ZB57wlx_1e_kcDK2rlo97Cfc2KJhvAl1/view?usp=sharing 
+
+---
+
+##   Important Links
+Frontend: https://earnkavach2-1.onrender.com
+Backend: https://earnkavach2.onrender.com
+Fraud Detection API: https://earnkavach-fraud-api.onrender.com
+Income prediction API: https://earnkavach-ml-api.onrender.com
+Worker reliability API: https://earnkavach-wrs-sanya.onrender.com
+Risk Score API: https://earnkavach-riskscore.onrender.com
