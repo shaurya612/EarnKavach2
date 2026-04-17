@@ -663,9 +663,9 @@ https://drive.google.com/file/d/1ZB57wlx_1e_kcDK2rlo97Cfc2KJhvAl1/view?usp=shari
 ---
 
 ##   Important Links
-Frontend: https://earnkavach2-1.onrender.com
-Backend: https://earnkavach2.onrender.com
-Fraud Detection API: https://earnkavach-fraud-api.onrender.com
-Income prediction API: https://earnkavach-ml-api.onrender.com
-Worker reliability API: https://earnkavach-wrs-sanya.onrender.com
-Risk Score API: https://earnkavach-riskscore.onrender.com
+Frontend: https://earnkavach2-1.onrender.com <br>
+Backend: https://earnkavach2.onrender.com  <br>
+Fraud Detection API: https://earnkavach-fraud-api.onrender.com   <br>
+Income prediction API: https://earnkavach-ml-api.onrender.com <br>
+Worker reliability API: https://earnkavach-wrs-sanya.onrender.com  <br>
+Risk Score API: https://earnkavach-riskscore.onrender.com 
